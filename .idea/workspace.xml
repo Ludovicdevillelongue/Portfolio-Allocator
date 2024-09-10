@@ -36,24 +36,6 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.bt_first.executor": "Run",
-    "Python.bt_test (1).executor": "Debug",
-    "Python.bt_test.executor": "Debug",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "C:/Users/Admin/Documents/Pro/projets_code/python/port_rebal"
-  }
-}]]></component>
-  <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\bt_second" />
-    </key>
-  </component>
-  <component name="RunManager" selected="Python.bt_test">
     <configuration name="bt_first" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="port_rebal" />
       <option name="ENV_FILES" value="" />
@@ -99,8 +81,8 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.bt_test" />
       <item itemvalue="Python.bt_first" />
+      <item itemvalue="Python.bt_test" />
     </list>
     <recent_temporary>
       <list>
