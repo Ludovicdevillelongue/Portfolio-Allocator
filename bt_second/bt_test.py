@@ -4,6 +4,7 @@ import random
 import time
 import pyfolio as pf
 import alpaca_trade_api as tradeapi
+import requests
 from alpaca_trade_api.rest import TimeFrame
 import pandas as pd
 from abc import ABC, abstractmethod
@@ -31,6 +32,9 @@ warnings.filterwarnings("ignore")
 # DataHandler class to handle data fetching and preprocessing
 class DataHandler:
     def __init__(self, api_key, api_secret, base_url):
+        self.api_key=api_key
+        self.api_secret=api_secret
+        self.base_url=base_url
         self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
 
     def fetch_market_data(self, symbols, start_date, end_date, timeframe='1D'):
@@ -58,12 +62,34 @@ class DataHandler:
     def get_tradable_symbols(self, asset_class='us_equity'):
         return [a.symbol for a in self.api.list_assets(status='active', asset_class=asset_class)]
 
+    def fetch_splits(self, symbols, start_date, end_date):
+        dates = pd.date_range(start=start_date, end=end_date, freq='D')
+        split_data = pd.DataFrame(False, index=dates, columns=symbols)
+        date_ranges = [(i, min(i + pd.DateOffset(days=90), pd.to_datetime(end_date))) for i in
+                       pd.date_range(start=start_date, end=end_date, freq='90D')]
+
+        headers = {"accept": "application/json", "APCA-API-KEY-ID": self.api_key,
+                   "APCA-API-SECRET-KEY": self.api_secret}
+
+        for symbol in symbols:
+            responses = [requests.get(
+                f"https://paper-api.alpaca.markets/v2/corporate_actions/announcements?ca_types=Split&since="
+                f"{start.strftime('%Y-%m-%d')}&until={end.strftime('%Y-%m-%d')}&symbol={symbol}",
+                headers=headers).json() for start, end in date_ranges]
+            split_dates = pd.to_datetime(
+                [ann['ex_date'] for r in responses for ann in r.get('corporate_action_announcements', []) if
+                 ann['ca_type'] == 'Split'])
+            split_data.loc[split_dates, symbol] = True
+
+        return split_data
+
 
 # Portfolio class to manage portfolio data and operations
 class Portfolio:
-    def __init__(self, initial_capital, symbols):
+    def __init__(self, initial_capital, symbols, split_data):
         self.initial_capital = initial_capital
         self.symbols = symbols
+        self.split_data=split_data
         self.last_positions = {symbol: 0 for symbol in symbols}
         self.cash_balance = initial_capital
         self.weight_history = {}
@@ -98,6 +124,11 @@ class Portfolio:
         self._record_portfolio_state(date, current_prices, target_weights)
 
     def _execute_trade(self, symbol, qty_change, price, date):
+        if split_data.loc[date, symbol]:  # Check if a split occurred on the current date
+            split_ratio = self.get_split_ratio(symbol, date)  # Fetch split ratio if needed
+            self.last_positions[symbol] *= split_ratio  # Adjust the number of shares held
+            # Do not adjust the price, but modify the quantity directly
+            qty_change *= split_ratio
         self.transaction_history.append({'symbol': symbol, 'amount': qty_change, 'price': price, 'date': date})
         self.last_positions[symbol] += qty_change
         self.cash_balance -= qty_change * price
@@ -172,9 +203,10 @@ class Utility:
         return len(historical_returns) >= estimation_period
 
 class StrategyRunner:
-    def __init__(self, data_handler, close_prices, initial_capital, estimation_period):
+    def __init__(self, data_handler, close_prices,split_data, initial_capital, estimation_period):
         self.data_handler = data_handler
         self.close_prices = close_prices
+        self.split_data=split_data
         self.initial_capital = initial_capital
         self.estimation_period = estimation_period
         self.asset_returns = self.data_handler.compute_returns(self.close_prices)
@@ -182,7 +214,7 @@ class StrategyRunner:
 
     def run_allocation(self, strategy_instance):
         """Run the backtest for a given strategy instance."""
-        portfolio = Portfolio(self.initial_capital, self.close_prices.columns)
+        portfolio = Portfolio(self.initial_capital, self.close_prices.columns, self.split_data)
 
         for date in self.asset_returns.index:
             current_prices = self.close_prices.loc[date].to_dict()
@@ -252,14 +284,15 @@ class StrategyRunner:
 
 # Backtester class to perform backtesting of strategies
 class Backtester:
-    def __init__(self, data_handler, close_prices, initial_capital, strategies, estimation_period):
+    def __init__(self, data_handler, close_prices,split_data, initial_capital, strategies, estimation_period):
         self.data_handler = data_handler
         self.close_prices = close_prices
+        self.split_data=split_data
         self.initial_capital = initial_capital
         self.strategies = strategies
         self.estimation_period = estimation_period
         self.asset_returns = self.data_handler.compute_returns(self.close_prices)
-        self.strategy_runner=StrategyRunner(self.data_handler, self.close_prices,
+        self.strategy_runner=StrategyRunner(self.data_handler, self.close_prices, self.split_data,
                                self.initial_capital, self.estimation_period)
         self.strategy_results = {}
 
@@ -392,7 +425,7 @@ if __name__ == "__main__":
     # Define symbols and initial capital
     initial_capital = 100000
     symbols = ['AAPL', 'MSFT', 'TSLA', 'NVDA']
-    start_date = '2024-01-01'
+    start_date = '2020-01-01'
     end_date = '2024-09-01'
 
     # Define Estimation Period (Number of Data Points Required before allocating)
@@ -438,14 +471,14 @@ if __name__ == "__main__":
     # Step 1: Backtest using historical data
     data_handler = DataHandler(API_KEY, API_SECRET, BASE_URL)
     close_prices, volumes = data_handler.fetch_market_data(symbols, start_date, end_date)
-
+    split_data=data_handler.fetch_splits(symbols, start_date, end_date)
     # Step 2: Compute benchmark returns using the BenchmarkPortfolio
     benchmark_portfolio = BenchmarkPortfolio(symbols, volumes)
     benchmark_returns = benchmark_portfolio.compute_benchmark_returns(data_handler.compute_returns(close_prices))
 
     # Step 3: Set up strategies and run backtests with multiple strategies
     print("Running backtests...")
-    backtester = Backtester(data_handler, close_prices, initial_capital, strategies, estimation_period)
+    backtester = Backtester(data_handler, close_prices, split_data, initial_capital, strategies, estimation_period)
 
     backtester.run_backtest(param_grids=param_grids, iterations=iterations,
                             optimization_algorithms=optimization_algorithms, strat_opti_bt_csv=strat_opti_bt_csv)
