@@ -9,19 +9,13 @@ from scipy.optimize import minimize
 from scipy.cluster.hierarchy import linkage, fcluster
 from scipy.spatial.distance import squareform
 import warnings
-import gym
 import numpy as np
 from scipy.optimize import minimize
 from scipy.cluster.hierarchy import linkage, fcluster
 from scipy.spatial.distance import squareform
-import torch
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import TimeSeriesSplit
-from stable_baselines3 import PPO, DDPG, TD3
-from gym import spaces
-from xgboost import XGBRegressor
-
 from reporting import PyfolioReport, DashReport
 
 warnings.filterwarnings("ignore")
@@ -174,148 +168,6 @@ class ERC(AllocationStrategy):
 
         return dict(zip(symbols, result.x))
 
-class PortfolioEnv(gym.Env):
-    def __init__(self, historical_returns, initial_capital=100000, transaction_cost=0.001, risk_aversion=1.0):
-        super(PortfolioEnv, self).__init__()
-        self.historical_returns = historical_returns
-        self.initial_capital = initial_capital
-        self.transaction_cost = transaction_cost
-        self.risk_aversion = risk_aversion
-
-        self.num_assets = historical_returns.shape[1]
-        self.current_step = 0
-        self.done = False
-
-        # Portfolio state: asset weights, cash position, market conditions (returns)
-        self.state_size = self.num_assets + 2  # Weights + Cash + Returns info
-        self.action_space = spaces.Box(low=-1, high=1, shape=(self.num_assets,), dtype=np.float32)
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.state_size,), dtype=np.float32)
-
-        self.current_weights = np.zeros(self.num_assets)
-        self.cash_balance = self.initial_capital
-        self.portfolio_value = self.initial_capital
-
-    def reset(self):
-        self.current_step = 0
-        self.done = False
-        self.current_weights = np.ones(self.num_assets) / self.num_assets  # Equal weight start
-        self.cash_balance = self.initial_capital
-        self.portfolio_value = self.initial_capital
-        return self._get_observation()
-
-    def _get_observation(self):
-        current_returns = self.historical_returns.iloc[0].values
-        return np.concatenate([self.current_weights, [self.cash_balance], [current_returns.mean()]])
-
-    def step(self, action):
-        if self.done:
-            raise ValueError("Cannot step in a finished episode")
-
-        action = np.clip(action, 0, 1)  # Ensure valid action (weights between 0 and 1)
-        action /= np.sum(action)  # Normalize weights to sum to 1
-
-        # Market returns and portfolio adjustment
-        current_returns = self.historical_returns.iloc[self.current_step].values
-        self.portfolio_value = (self.portfolio_value * np.dot(self.current_weights, 1 + current_returns))
-
-        # Transaction costs for rebalancing
-        transaction_costs = self.transaction_cost * np.sum(np.abs(action - self.current_weights)) * self.portfolio_value
-        self.portfolio_value -= transaction_costs
-
-        # Update weights and cash balance
-        self.current_weights = action
-        self.cash_balance = self.portfolio_value
-
-        # Calculate reward (e.g., risk-adjusted return using Sharpe ratio)
-        reward = (self.portfolio_value - self.initial_capital) / self.initial_capital
-        reward -= self.risk_aversion * np.std(current_returns)  # Penalize high volatility
-
-        self.current_step += 1
-        if self.current_step >= len(self.historical_returns) - 1:
-            self.done = True
-
-        return self._get_observation(), reward, self.done, {}
-
-    def render(self, mode='human'):
-        print(f"Step {self.current_step}: Portfolio Value = {self.portfolio_value}, Weights = {self.current_weights}")
-
-class RLAllocator(AllocationStrategy):
-    def __init__(self, algorithm=None):
-        self.algorithm = algorithm
-
-    def _train_agent(self):
-        if self.algorithm is None:
-            raise ValueError("Algorithm must be selected before training the RL agent.")
-        self.model = self._select_rl_model()
-        self.model.learn(total_timesteps=10000)  # Adjust timesteps based on the data length
-
-    def _select_rl_model(self):
-        if self.algorithm == 'PPO':
-            return PPO("MlpPolicy", self.env, verbose=1)
-        elif self.algorithm == 'TD3':
-            return TD3("MlpPolicy", self.env, verbose=1)
-        elif self.algorithm == 'DDPG':
-            return DDPG("MlpPolicy", self.env, verbose=1)
-        else:
-            raise ValueError(f"Unknown algorithm: {self.algorithm}")
-
-    def compute_weights(self, historical_returns):
-        self.env = PortfolioEnv(historical_returns, transaction_cost=0, risk_aversion=0)
-        self._train_agent()  # Train the selected RL agent
-        obs = self.env.reset()
-        done = False
-        while not done:
-            action, _states = self.model.predict(obs)
-            obs, rewards, done, info = self.env.step(action)
-        return dict(zip(historical_returns.columns, self.env.current_weights))
-
-
-class MLModelAllocator(AllocationStrategy):
-    def __init__(self, model=None, validation_split=0.2, n_splits=5):
-        self.model = model
-        self.validation_split = validation_split
-        self.n_splits = n_splits
-
-    def _validate_data(self, features, target):
-        if len(features) != len(target): raise ValueError("Mismatched lengths.")
-        features, target = features.dropna(), target.dropna()
-        if len(features) == 0 or len(target) == 0: raise ValueError("No valid data.")
-        return features, target
-
-    def _train_test_split(self, features, target):
-        split = int(len(features) * (1 - self.validation_split))
-        return features.iloc[:split], features.iloc[split:], target.iloc[:split], target.iloc[split:]
-
-    def _cross_validate(self, features, target):
-        # Adjust n_splits based on available samples
-        n_splits = min(self.n_splits, len(features) - 1)  # Ensure we have enough samples for splits
-        tscv = TimeSeriesSplit(n_splits=n_splits)
-        cv_scores = []
-
-        for train_index, test_index in tscv.split(features):
-            X_train, X_test = features.iloc[train_index], features.iloc[test_index]
-            y_train, y_test = target.iloc[train_index], target.iloc[test_index]
-            self.model.fit(X_train, y_train)
-            y_pred = self.model.predict(X_test)
-            score = mean_squared_error(y_test, y_pred)
-            cv_scores.append(score)
-
-        return np.mean(cv_scores)
-
-    def compute_weights(self, historical_returns):
-        if len(historical_returns) < 3: return {symbol: 1 / historical_returns.shape[1] for symbol in historical_returns.columns}
-        features, target = self._validate_data(historical_returns.dropna().iloc[:-1], historical_returns.shift(-1).dropna())
-        X_train, X_val, y_train, y_val = self._train_test_split(features, target)
-        self.model.fit(X_train, y_train)
-        print(f"Validation Error (MSE): {mean_squared_error(y_val, self.model.predict(X_val))}")
-        print(f"Cross-validation MSE: {self._cross_validate(features, target)}")
-        return self._optimize_weights(historical_returns, self.model.predict(features.iloc[-1:].values))
-
-    def _optimize_weights(self, historical_returns, predicted_returns):
-        predicted_returns = np.clip(np.squeeze(predicted_returns), 0, None)
-        return {symbol: weight for symbol, weight in zip(historical_returns.columns, predicted_returns /
-        np.sum(predicted_returns) if np.sum(predicted_returns) else np.ones(len(predicted_returns)) / len(predicted_returns))}
-
 class Utility:
     def is_estimation_period_satisfied(self, historical_returns, estimation_period):
         """
@@ -339,8 +191,6 @@ class Backtester:
         self.strategies = strategies  # List of AllocationStrategy instances (RL, ML, others)
         self.asset_returns = self.data_handler.compute_returns(self.close_prices)
         self.strategy_results = {}
-        self.rl_algorithms = rl_algorithms
-        self.ml_models = ml_models
         self.estimation_period = estimation_period
 
     def run_backtest(self):
@@ -348,19 +198,8 @@ class Backtester:
         optimizer = Optimizer(self)  # Initialize optimizer
 
         for strategy in self.strategies:
-            if isinstance(strategy, RLAllocator):
-                rl_strategy = strategy
-                print("Evaluating RL-based strategies...")
-                best_rl_strategy = optimizer.evaluate_and_select_best(rl_strategy, self.rl_algorithms, type='RL')
-                self._backtest_strategy(best_rl_strategy)
-                break  # Exit the loop since we only need one instance
-            elif isinstance(strategy, MLModelAllocator):
-                ml_strategy = strategy
-                best_ml_strategy = optimizer.evaluate_and_select_best(ml_strategy, self.ml_models, type='ML')
-                self._backtest_strategy(best_ml_strategy)
-            else:
-                print(f"Backtesting {strategy.__class__.__name__}")
-                self._backtest_strategy(strategy)
+            print(f"Backtesting {strategy.__class__.__name__}")
+            self._backtest_strategy(strategy)
 
     def _backtest_strategy(self, strategy):
         """Backtest a strategy and return strat results"""
@@ -554,9 +393,10 @@ if __name__ == "__main__":
 
     # Define symbols and initial capital
     initial_capital = 100000
-    symbols = ['AAPL', 'MSFT', 'TSLA', 'NVDA']
-    start_date = '2024-01-01'
-    end_date = '2024-09-01'
+
+    symbols = ['AAPL', 'MSFT', 'TSLA', 'NVDA', 'ESMV', 'HDGE', 'IPAC', 'IWML', 'KRMD', 'GINN']
+    start_date = '2022-01-01'
+    end_date = '2024-08-01'
 
     # Estimation Period (Number of Data Points Required before allocating)
     estimation_period=30
@@ -564,6 +404,7 @@ if __name__ == "__main__":
     # Step 1: Backtest using historical data
     data_handler = DataHandler(API_KEY, API_SECRET, BASE_URL)
     close_prices, volumes = data_handler.fetch_market_data(symbols, start_date, end_date)
+    trading_symbols=data_handler.get_tradable_symbols()
 
     # Step 2: Compute benchmark returns using the BenchmarkPortfolio
     benchmark_portfolio = BenchmarkPortfolio(symbols, volumes)
@@ -571,8 +412,6 @@ if __name__ == "__main__":
 
     # Step 3: Set up and run backtests with multiple strategies
     print("Running backtests...")
-    rl_algorithms = ['PPO', 'TD3', 'DDPG']
-    ml_models = [RandomForestRegressor(), XGBRegressor()]
     strategies = [ERC(), MeanVar()]
     backtester = Backtester(data_handler, close_prices, initial_capital, strategies, estimation_period)
     backtester.run_backtest()
