@@ -23,3 +23,15 @@ ERC,GridSearch,{'regularization_strength': 0.0},0.38255680441436873
 ERC,RandomSearch,{'regularization_strength': 0.09006617578860761},0.17333794721659615
 ERC,RandomSearch,{'regularization_strength': 0.0916029838702542},0.17321872978792785
 ERC,GridSearch,{'regularization_strength': 0.0},0.38255680441436873
+ERC,RandomSearch,{'regularization_strength': 0.028364843481792735},0.1868581435128015
+ERC,RandomSearch,{'regularization_strength': 0.0323573518027534},0.18468483786856427
+ERC,GridSearch,{'regularization_strength': 0.0},0.38255680431523753
+ERC,RandomSearch,{'regularization_strength': 0.06969512793749082},0.1753814425462488
+ERC,RandomSearch,{'regularization_strength': 0.0021230639672270126},0.25508148780579776
+ERC,GridSearch,{'regularization_strength': 0.0},0.38255680431523753
+ERC,RandomSearch,{'regularization_strength': 0.03806584935046459},0.18222316294706925
+ERC,RandomSearch,{'regularization_strength': 0.028444298237613033},0.18680961896191145
+ERC,GridSearch,{'regularization_strength': 0.0},0.38255680431523753
+ERC,RandomSearch,{'regularization_strength': 0.010817975942212666},0.20846280789686766
+ERC,RandomSearch,{'regularization_strength': 0.054153699197038274},0.17787115599790104
+ERC,GridSearch,{'regularization_strength': 0.0},0.38255680431523753

@@ -12,17 +12,13 @@ from scipy.optimize import minimize
 from scipy.cluster.hierarchy import linkage, fcluster
 from scipy.spatial.distance import squareform
 import warnings
-import gym
 import numpy as np
 from scipy.optimize import minimize
 from scipy.cluster.hierarchy import linkage, fcluster
 from scipy.spatial.distance import squareform
-import torch
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import TimeSeriesSplit
-from stable_baselines3 import PPO, DDPG, TD3
-from gym import spaces
 from xgboost import XGBRegressor
 
 from bt_second.optimizer import StrategyOptimizer, RandomSearchAlgorithm, GridSearchAlgorithm, \

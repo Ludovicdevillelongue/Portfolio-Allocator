@@ -14,6 +14,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Font
 from openpyxl.drawing.image import Image
+
 class PyfolioReport:
     def __init__(self,output_dir):
         self.output_dir=output_dir
@@ -95,6 +96,7 @@ class DashReport:
                 'portfolio_cumulative_returns': (1 + results['portfolio_returns']).cumprod() - 1,
                 'weights': results['weights'], 'asset_prices':results['asset_prices'], 'positions': results['positions'],
                 'portfolio_pnl': results['portfolio_pnl'], 'asset_pnl': results['asset_pnl'],
+                'portfolio_cum_pnl':results['portfolio_pnl'].cumsum(),'asset_cum_pnl': results['asset_pnl'].cumsum(),
                 'asset_cumulative_returns': (1 + results['asset_returns']).cumprod() - 1
             }
             self.performance_metrics = {
@@ -155,13 +157,13 @@ class DashReport:
             html.H1('Strategies Rolling Performance Metrics'),
             *[dcc.Graph(id=f'graph-{metric}', figure={'data': [go.Scatter(x=metrics.index, y=metrics, mode='lines', name=strategy)
                 for strategy, data in self.strategy_results_dash.items() for metrics in [data[metric]]], 'layout': go.Layout(title=f'{metric.capitalize()} Comparison Across Strategies', xaxis={'title': 'Date'}, yaxis={'title': metric.replace("_", " ").title()})})
-              for metric in ['rolling_sharpe', 'rolling_beta', 'portfolio_cumulative_returns', 'portfolio_pnl']],
+              for metric in ['rolling_sharpe', 'rolling_beta', 'portfolio_cumulative_returns', 'portfolio_pnl', 'portfolio_cum_pnl']],
 
             html.H1('Asset-Level Metrics Per Strategy'),
             dcc.Dropdown(id='strategy-dropdown', options=[{'label': s, 'value': s} for s in self.strategy_results_dash.keys()],
                          value=list(self.strategy_results_dash.keys())[0], clearable=False, style={'width': '50%'}),
             *[dcc.Graph(id=f'asset-{metric}-graph') for metric in
-              ['weights', 'asset_prices', 'positions', 'asset_pnl', 'asset_cumulative_returns']],
+              ['weights', 'asset_prices', 'positions', 'asset_pnl','asset_cum_pnl', 'asset_cumulative_returns']],
             # Add asset correlation heatmap graph
             html.H1('Asset Correlation Heatmap'),
             dcc.Graph(id='correlation-heatmap', figure=self._generate_correlation_heatmap())  # Use the static heatmap figure
@@ -170,7 +172,7 @@ class DashReport:
     def _setup_callbacks(self):
         @self.app.callback(
             [Output(f'asset-{metric}-graph', 'figure') for metric in ['weights',
-                                                'asset_prices', 'positions', 'asset_pnl', 'asset_cumulative_returns']],
+                                                'asset_prices', 'positions', 'asset_pnl', 'asset_cum_pnl', 'asset_cumulative_returns']],
             [Input('strategy-dropdown', 'value')]
         )
         def update_asset_graphs(selected_strategy):
@@ -187,7 +189,7 @@ class DashReport:
                     )
                 }
                 for metric_name, metric in self.strategy_results_dash[selected_strategy].items()
-                if metric_name in ['weights','asset_prices', 'positions', 'asset_pnl', 'asset_cumulative_returns']
+                if metric_name in ['weights','asset_prices', 'positions', 'asset_pnl','asset_cum_pnl', 'asset_cumulative_returns']
             ]
 
             return figures

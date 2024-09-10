@@ -4,53 +4,61 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fdef956d-1420-400f-9f24-c8c4a5fcb8d5" name="Changes" comment="create optimization process" />
+    <list default="true" id="e0790455-a43c-4eef-9faa-719d655e11d7" name="Changes" comment="create dash">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/port_rebal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/port_rebal.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bt_first.py" beforeDir="false" afterPath="$PROJECT_DIR$/bt_first.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bt_second/alloc_strat_opti_tester_recap.csv" beforeDir="false" afterPath="$PROJECT_DIR$/bt_second/alloc_strat_opti_tester_recap.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bt_second/bt_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/bt_second/bt_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bt_second/reporting.py" beforeDir="false" afterPath="$PROJECT_DIR$/bt_second/reporting.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/interesting_times_plot.png" beforeDir="false" afterPath="$PROJECT_DIR$/pyfolio_results/ERC/interesting_times_plot.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/performance_metrics.csv" beforeDir="false" afterPath="$PROJECT_DIR$/pyfolio_results/ERC/performance_metrics.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/positions_plot.png" beforeDir="false" afterPath="$PROJECT_DIR$/pyfolio_results/ERC/positions_plot.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/pyfolio_report.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/pyfolio_results/ERC/pyfolio_report.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/returns_plot.png" beforeDir="false" afterPath="$PROJECT_DIR$/pyfolio_results/ERC/returns_plot.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/transactions_plot.png" beforeDir="false" afterPath="$PROJECT_DIR$/pyfolio_results/ERC/transactions_plot.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/interesting_times_plot.png" beforeDir="false" afterPath="$PROJECT_DIR$/pyfolio_results/MeanVar/interesting_times_plot.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/performance_metrics.csv" beforeDir="false" afterPath="$PROJECT_DIR$/pyfolio_results/MeanVar/performance_metrics.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/positions_plot.png" beforeDir="false" afterPath="$PROJECT_DIR$/pyfolio_results/MeanVar/positions_plot.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/pyfolio_report.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/pyfolio_results/MeanVar/pyfolio_report.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/returns_plot.png" beforeDir="false" afterPath="$PROJECT_DIR$/pyfolio_results/MeanVar/returns_plot.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/transactions_plot.png" beforeDir="false" afterPath="$PROJECT_DIR$/pyfolio_results/MeanVar/transactions_plot.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/correlation_heatmap.png" beforeDir="false" afterPath="$PROJECT_DIR$/pyfolio_results/correlation_heatmap.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reporting.py" beforeDir="false" afterPath="$PROJECT_DIR$/reporting.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Python Script" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="opti" />
+        <entry key="$PROJECT_DIR$" value="create_dash_report" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 4
+  &quot;associatedIndex&quot;: 6
 }</component>
-  <component name="ProjectId" id="2lW50X2H3h0evOf8oHI6shKjClv" />
+  <component name="ProjectId" id="2lWkSnEwL6yOP06J71AjkQKt2Q7" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.bt_first.executor&quot;: &quot;Run&quot;,
-    &quot;Python.bt_test (1).executor&quot;: &quot;Debug&quot;,
-    &quot;Python.bt_test.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Admin/Documents/Pro/projets_code/python/port_rebal&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.bt_first.executor": "Run",
+    "Python.bt_test.executor": "Run",
+    "Python.main.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "last_opened_file_path": "C:/Users/ludov/Documents/pro/projets/port_rebal/bt_second/bt_test.py"
   }
-}</component>
-  <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\bt_second" />
-    </key>
-  </component>
-  <component name="RunManager" selected="Python.bt_test">
+}]]></component>
+  <component name="RunManager" selected="Python.bt_first">
     <configuration name="bt_first" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="port_rebal" />
       <option name="ENV_FILES" value="" />
@@ -82,7 +90,7 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="SDK_NAME" value="Python 3.12 (trading_platform)" />
+      <option name="SDK_NAME" value="Python 3.12" />
       <option name="WORKING_DIRECTORY" value="" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -97,12 +105,11 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.bt_first" />
       <item itemvalue="Python.bt_test" />
+      <item itemvalue="Python.bt_first" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.bt_first" />
         <item itemvalue="Python.bt_first" />
       </list>
     </recent_temporary>
@@ -110,68 +117,48 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-babbdf50b680-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.15989.155" />
+        <option value="bundled-python-sdk-d68999036c7f-d3b881c8e49f-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-233.14475.56" />
       </set>
     </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="fdef956d-1420-400f-9f24-c8c4a5fcb8d5" name="Changes" comment="" />
-      <created>1725282768166</created>
+      <changelist id="e0790455-a43c-4eef-9faa-719d655e11d7" name="Changes" comment="" />
+      <created>1725303222522</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1725282768166</updated>
+      <updated>1725303222522</updated>
     </task>
-    <task id="LOCAL-00001" summary="first day">
+    <task id="LOCAL-00001" summary="create dash">
       <option name="closed" value="true" />
-      <created>1725303015267</created>
+      <created>1725310288888</created>
       <option name="number" value="00001" />
       <option name="presentableId" value="LOCAL-00001" />
       <option name="project" value="LOCAL" />
-      <updated>1725303015267</updated>
+      <updated>1725310288888</updated>
     </task>
-    <task id="LOCAL-00002" summary="create optimization process">
-      <option name="closed" value="true" />
-      <created>1725915448877</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1725915448877</updated>
-    </task>
-    <task id="LOCAL-00003" summary="create optimization process">
-      <option name="closed" value="true" />
-      <created>1725915505048</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1725915505048</updated>
-    </task>
-    <option name="localTasksCounter" value="4" />
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="first day" />
-    <MESSAGE value="create optimization process" />
-    <option name="LAST_COMMIT_MESSAGE" value="create optimization process" />
+    <MESSAGE value="create dash" />
+    <option name="LAST_COMMIT_MESSAGE" value="create dash" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <default-breakpoints>
-        <breakpoint type="python-exception">
-          <properties notifyOnTerminate="true" exception="BaseException">
-            <option name="notifyOnTerminate" value="true" />
-          </properties>
-        </breakpoint>
-      </default-breakpoints>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/bt_second/reporting.py</url>
+          <line>92</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/bt_second/reporting.py</url>
+          <line>115</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
     </breakpoint-manager>
-    <watches-manager>
-      <configuration name="PythonConfigurationType">
-        <watch expression="positions" />
-        <watch expression="self.strategy_name" />
-        <watch expression="self.done" />
-        <watch expression="features" language="Python" />
-      </configuration>
-    </watches-manager>
   </component>
 </project>
