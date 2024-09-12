@@ -5,8 +5,84 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fdef956d-1420-400f-9f24-c8c4a5fcb8d5" name="Changes" comment="create optimization process">
+      <change afterPath="$PROJECT_DIR$/alloc_test/backtest/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/backtest/backtester.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/backtest/benchmark_portfolio.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/broker/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/broker/broker_connect.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/broker/broker_metrics.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/broker/broker_order.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/config/broker_config.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/config/bt_config.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/data_management/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/data_management/data_handler.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/data_management/data_retriever.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/indicators/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/reporting/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/reporting/live_report.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/signal_generator/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/signal_generator/dl_predictor.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/signal_generator/ml_predictor.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/strategies/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/strategies/strat_creator.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/utils/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/utils/data_utilities.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/single_file.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/port_rebal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/port_rebal.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bt_second/bt_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/bt_second/bt_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bt_first.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bt_second/alloc_strat_opti_tester_recap.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bt_second/bt_test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bt_second/optimizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/strategies/strat_optimizer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bt_second/reporting.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/reporting/bt_report.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bt_structure/backtester.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/indicators/performance_indicators.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bt_structure/data_handler.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bt_structure/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bt_structure/portfolio_allocator.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/backtest/portfolio.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bt_structure/portfolio_live.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/signal_generator/signal_sender.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bt_structure/reporting.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bt_structure/strategies.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/interesting_times_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/performance_metrics.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/positions_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/pyfolio_report.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/returns_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/transactions_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/HierarchicalRiskParity/interesting_times_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/HierarchicalRiskParity/performance_metrics.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/HierarchicalRiskParity/positions_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/HierarchicalRiskParity/pyfolio_report.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/HierarchicalRiskParity/returns_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/HierarchicalRiskParity/transactions_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MaximumDivergence/interesting_times_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MaximumDivergence/performance_metrics.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MaximumDivergence/positions_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MaximumDivergence/pyfolio_report.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MaximumDivergence/returns_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MaximumDivergence/transactions_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/interesting_times_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/performance_metrics.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/positions_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/pyfolio_report.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/returns_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/transactions_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MinVol/interesting_times_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MinVol/performance_metrics.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MinVol/positions_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MinVol/pyfolio_report.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MinVol/returns_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/MinVol/transactions_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/OneOverN/interesting_times_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/OneOverN/performance_metrics.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/OneOverN/positions_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/OneOverN/pyfolio_report.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/OneOverN/returns_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/OneOverN/transactions_plot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyfolio_results/correlation_heatmap.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/reporting.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/todo" beforeDir="false" afterPath="$PROJECT_DIR$/todo" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,7 +112,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-    <configuration name="bt_first" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.bt_first.executor": "Run",
+    "Python.bt_test (1).executor": "Debug",
+    "Python.bt_test.executor": "Run",
+    "Python.main (1).executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.single_file.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/Admin/Documents/Pro/projets_code/python/port_rebal"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\utils" />
+      <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\strategies" />
+      <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\signal_generator" />
+      <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\reporting" />
+      <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\indicators" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\config" />
+      <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\bt_second" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.main">
+    <configuration name="bt_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="port_rebal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -45,29 +148,7 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/bt_first.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="bt_test" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
-      <module name="port_rebal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/bt_second" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
@@ -80,14 +161,60 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="port_rebal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/alloc_test" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/alloc_test/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="single_file" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="port_rebal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.12 (trading_platform)" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/single_file.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <list>
-      <item itemvalue="Python.bt_first" />
+      <item itemvalue="Python.single_file" />
       <item itemvalue="Python.bt_test" />
+      <item itemvalue="Python.main" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.bt_first" />
-        <item itemvalue="Python.bt_first" />
+        <item itemvalue="Python.main" />
+        <item itemvalue="Python.bt_test" />
       </list>
     </recent_temporary>
   </component>
@@ -141,13 +268,6 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/bt_second/bt_test.py</url>
-          <line>262</line>
-          <option name="timeStamp" value="9" />
-        </line-breakpoint>
-      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">
@@ -156,5 +276,14 @@
         </breakpoint>
       </default-breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="positions" />
+        <watch expression="self.strategy_name" />
+        <watch expression="self.done" />
+        <watch expression="features" language="Python" />
+        <watch expression="split_data" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

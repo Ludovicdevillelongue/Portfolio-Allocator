@@ -1,0 +1,32 @@
+
+initial_capital: 100000
+symbols: ['AAPL', 'MSFT', 'TSLA', 'NVDA']
+start_date: '2024-01-01'
+end_date: '2024-09-01'
+estimation_period: 30
+strategies: {
+    'ERC': !call ERC
+}
+param_grids: {
+    'MeanVar': {
+        'risk_free_rate': !tuple [0.01, 0.05],
+        'target_return': !tuple [0.05, 0.15]
+    },
+    'ERC': {
+        'regularization_strength': !tuple [0.0, 0.1]
+    },
+    'RLAllocator': {
+        'algorithm': ['PPO', 'TD3', 'DDPG'],
+        'learning_rate': !tuple [0.0001, 0.01],
+        'gamma': !tuple [0.9, 0.99],
+        'n_steps': !tuple [64, 512]
+    },
+    'MLModelAllocator': {
+        'model': [RandomForestRegressor(), XGBRegressor()],
+        'n_estimators': !tuple [50, 500],
+        'max_depth': !tuple [3, 10],
+        'learning_rate': !tuple [0.01, 0.3]
+    }
+}
+
+optimization_algorithms : [RandomSearchAlgorithm(), GridSearchAlgorithm()]
