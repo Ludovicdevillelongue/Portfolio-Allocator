@@ -28,18 +28,17 @@ class LiveStrategyRunner:
         positions_symbols=list(broker_metrics.get_all_positions()['symbol'])
         bt_symbols=list(self.final_weights.keys())
         # Step 3: Adjust positions to match the final weights
-        self.api.cancel_all_orders()
-        # for symbol in list(set(positions_symbols + bt_symbols)):
-        #     try:
-        #         target_position_value = portfolio_value * self.final_weights[symbol]
-        #         target_qty = target_position_value / current_prices[symbol]
-        #         current_qty = float(broker_metrics.get_symbol_position(symbol).qty)
-        #         order_qty = target_qty - current_qty
-        #         if order_qty != 0:
-        #             side = 'buy' if order_qty > 0 else 'sell'
-        #             broker_orders.submit_order(symbol, current_qty, order_qty, side)
-        #     except KeyError:
-        #         broker_orders.close_position(symbol)
+        for symbol in list(set(positions_symbols + bt_symbols)):
+            try:
+                target_position_value = portfolio_value * self.final_weights[symbol]
+                target_qty = target_position_value / current_prices[symbol]
+                current_qty = float(broker_metrics.get_symbol_position(symbol).qty)
+                order_qty = target_qty - current_qty
+                if order_qty != 0:
+                    side = 'buy' if order_qty > 0 else 'sell'
+                    broker_orders.submit_order(symbol, current_qty, order_qty, side)
+            except KeyError:
+                broker_orders.close_position(symbol)
 
 
     def run(self):
