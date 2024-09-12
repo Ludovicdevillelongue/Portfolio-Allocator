@@ -196,7 +196,7 @@ class StrategyOptimizer:
 
         # Run the strategy and calculate the Sharpe ratio
         portfolio_metrics = self.strategy_runner.run_allocation(self.strategy_instance)
-        sharpe_ratio = pf.timeseries.sharpe_ratio(portfolio_metrics['portfolio_returns'])
+        sharpe_ratio =portfolio_metrics['sharpe_ratio']
         return sharpe_ratio
 
     def _optimize_strategy(self, optimization_algorithm):

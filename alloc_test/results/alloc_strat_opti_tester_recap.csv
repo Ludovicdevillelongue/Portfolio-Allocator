@@ -1,4 +1,4 @@
 strat_name,opti_algo,params,sharpe_ratio
-ERC,RandomSearch,{'regularization_strength': 0.017028659234504407},1.387555365802927
-ERC,RandomSearch,{'regularization_strength': 0.009844256296887777},1.387810893072862
-ERC,GridSearch,{'regularization_strength': 0.0},1.3787923523569214
+ERC,RandomSearch,{'regularization_strength': 0.05543015572664587},1.4219428878595834
+ERC,RandomSearch,{'regularization_strength': 0.04195734148458057},1.4218884619925656
+ERC,GridSearch,{'regularization_strength': 0.0},1.3206352035498978

@@ -3,7 +3,8 @@ import pandas as pd
 import requests
 from alpaca_trade_api.rest import TimeFrame
 from alloc_test.broker.broker_connect import AlpacaConnect, BrokerConnect
-
+from datetime import datetime
+import pytz
 
 class DataRetriever(ABC):
     def __init__(self, api):
@@ -25,24 +26,20 @@ class AlpacaDataRetriever(DataRetriever):
 
     def get_historical_market_data(self, data_frequency, symbols, start_date, end_date):
         data_frequency_mapping = {'day': TimeFrame.Day, 'minute': TimeFrame.Minute, 'hour': TimeFrame.Hour}
-        market_data = {
-            symbol: self.api.get_bars(symbol, data_frequency_mapping[data_frequency], start=start_date, end=end_date).df
-            for symbol in symbols}
-        data = pd.concat(market_data, axis=1)
-        close_prices = data.xs('close', level=1, axis=1)
+        market_data = self.api.get_bars(symbols, data_frequency_mapping[data_frequency], start=start_date, end=end_date).df
+        close_prices = market_data.pivot_table(index=market_data.index, columns='symbol', values='close')
         close_prices.index = close_prices.index.date
-        volumes = data.xs('volume', level=1, axis=1)
+        volumes = market_data.pivot_table(index=market_data.index, columns='symbol', values='volume')
         volumes.index = volumes.index.date
         return close_prices, volumes
 
     def get_last_market_data(self, data_frequency, symbols):
-        data_frequency_mapping = {'day': TimeFrame.Day, 'minute': TimeFrame.Minute, 'hour': TimeFrame.Hour}
-        market_data = {
-            symbol: self.api.get_bars(symbol, data_frequency_mapping[data_frequency], limit=1).df
-            for symbol in symbols}
-        data = pd.concat(market_data, axis=1)
-        close_prices = data.xs('close', level=1, axis=1).ffill().iloc[-1]
-        return close_prices
+        # Query and create the DataFrame with aligned timestamps
+        close_prices=pd.concat({symbol: pd.DataFrame([{
+            't': datetime.strptime(bar._raw['t'], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.utc).astimezone( pytz.timezone('Europe/Paris')),
+            'c': bar._raw['c']}]) for symbol, bar in self.api.get_latest_bars(symbols).items()}).reset_index(
+            level=0).pivot_table(index='t', columns='level_0', values='c')
+        return close_prices.ffill().bfill()
 
     def get_tradable_symbols(self, asset_class):
         return [a.symbol for a in self.api.list_assets(status='active', asset_class=asset_class)]

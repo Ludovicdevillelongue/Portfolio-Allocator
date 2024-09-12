@@ -79,50 +79,21 @@ class ShapReport:
 
 
 class DashReport:
-    def __init__(self, asset_returns, strategy_results, benchmark_returns, port):
+    def __init__(self, asset_returns, strategy_results, port):
         self.asset_returns=asset_returns
-        self.strategy_results = strategy_results
-        self.benchmark_returns = benchmark_returns
-        self.strategy_results_dash = self._generate_performance_report()
+        self.strategy_metrics = strategy_results
         self.app = dash.Dash(__name__)
         self._setup_layout()
         self._setup_callbacks()
         self.port = port
 
-
-    def _generate_performance_report(self):
-        strategy_results_dash = {}
-        for name, results in self.strategy_results.items():
-            self.rolling_metrics = {
-                'rolling_sharpe': pf.timeseries.rolling_sharpe(results['portfolio_returns'], 126),
-                'rolling_beta': pf.timeseries.rolling_beta(results['portfolio_returns'], self.benchmark_returns, 126),
-                'portfolio_cumulative_returns': (1 + results['portfolio_returns']).cumprod() - 1,
-                'weights': results['weights'], 'asset_prices':results['asset_prices'], 'positions': results['positions'],
-                'portfolio_pnl': results['portfolio_pnl'], 'asset_pnl': results['asset_pnl'],
-                'portfolio_cum_pnl':results['portfolio_pnl'].cumsum(),'asset_cum_pnl': results['asset_pnl'].cumsum(),
-                'asset_cumulative_returns': (1 + results['asset_returns']).cumprod() - 1
-            }
-            self.performance_metrics = {
-                'best_opti_algo' : results['best_opti_algo'],
-                'best_params':str(results['best_params']),
-                'annual_return': pf.timeseries.annual_return(results['portfolio_returns']),
-                'annual_volatility': pf.timeseries.annual_volatility(results['portfolio_returns']),
-                'sharpe_ratio': pf.timeseries.sharpe_ratio(results['portfolio_returns']),
-                'calmar_ratio': pf.timeseries.calmar_ratio(results['portfolio_returns']),
-                'max_drawdown': pf.timeseries.max_drawdown(results['portfolio_returns']),
-                'omega_ratio': pf.timeseries.omega_ratio(results['portfolio_returns']),
-                'sortino_ratio': pf.timeseries.sortino_ratio(results['portfolio_returns']),
-                'tail_ratio': pf.timeseries.tail_ratio(results['portfolio_returns']),
-                'daily_var': pf.timeseries.value_at_risk(results['portfolio_returns'])
-            }
-            self.performance_metrics = {k: (0 if pd.isna(v) else v) for k, v in self.performance_metrics.items()}
-            strategy_results_dash[name] = {**self.rolling_metrics, **self.performance_metrics}
-        return strategy_results_dash
-
     def _prepare_data_for_table(self):
+        performance_metrics=['best_opti_algo', 'best_params', 'annual_return', 'annual_volatility', 'sharpe_ratio',
+        'calmar_ratio', 'max_drawdown', 'omega_ratio', 'sortino_ratio', 'tail_ratio', 'daily_var']
+
         return [{'Strategy': s, **{k: round(v, 2) if isinstance(v, (float, int)) else v
-                                   for k, v in m.items() if k in list(self.performance_metrics.keys())}}
-                for s, m in self.strategy_results_dash.items()]
+                                   for k, v in m.items() if k in performance_metrics}}
+                for s, m in self.strategy_metrics.items()]
 
     def _generate_correlation_heatmap(self):
         # Generate the correlation matrix and create a static heatmap
@@ -159,12 +130,13 @@ class DashReport:
 
             html.H1('Strategies Rolling Performance Metrics'),
             *[dcc.Graph(id=f'graph-{metric}', figure={'data': [go.Scatter(x=metrics.index, y=metrics, mode='lines', name=strategy)
-                for strategy, data in self.strategy_results_dash.items() for metrics in [data[metric]]], 'layout': go.Layout(title=f'{metric.capitalize()} Comparison Across Strategies', xaxis={'title': 'Date'}, yaxis={'title': metric.replace("_", " ").title()})})
+                for strategy, data in self.strategy_metrics.items() for metrics in [data[metric]]], 'layout':
+                go.Layout(title=f'{metric.capitalize()} Comparison Across Strategies', xaxis={'title': 'Date'}, yaxis={'title': metric.replace("_", " ").title()})})
               for metric in ['rolling_sharpe', 'rolling_beta', 'portfolio_cumulative_returns', 'portfolio_pnl', 'portfolio_cum_pnl']],
 
             html.H1('Asset-Level Metrics Per Strategy'),
-            dcc.Dropdown(id='strategy-dropdown', options=[{'label': s, 'value': s} for s in self.strategy_results_dash.keys()],
-                         value=list(self.strategy_results_dash.keys())[0], clearable=False, style={'width': '50%'}),
+            dcc.Dropdown(id='strategy-dropdown', options=[{'label': s, 'value': s} for s in self.strategy_metrics.keys()],
+                         value=list(self.strategy_metrics.keys())[0], clearable=False, style={'width': '50%'}),
             *[dcc.Graph(id=f'asset-{metric}-graph') for metric in
               ['weights', 'asset_prices', 'positions', 'asset_pnl','asset_cum_pnl', 'asset_cumulative_returns']],
             # Add asset correlation heatmap graph
@@ -191,7 +163,7 @@ class DashReport:
                         yaxis={'title': metric_name.replace("_", " ").title()}
                     )
                 }
-                for metric_name, metric in self.strategy_results_dash[selected_strategy].items()
+                for metric_name, metric in self.strategy_metrics[selected_strategy].items()
                 if metric_name in ['weights','asset_prices', 'positions', 'asset_pnl','asset_cum_pnl', 'asset_cumulative_returns']
             ]
 

@@ -4,7 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fdef956d-1420-400f-9f24-c8c4a5fcb8d5" name="Changes" comment="restructure script and manage positions traded" />
+    <list default="true" id="fdef956d-1420-400f-9f24-c8c4a5fcb8d5" name="Changes" comment="uncomment live positions">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alloc_test/backtest/backtester.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/backtest/backtester.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alloc_test/data_management/data_retriever.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/data_management/data_retriever.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alloc_test/indicators/performance_indicators.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/indicators/performance_indicators.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alloc_test/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/main_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alloc_test/reporting/bt_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/reporting/bt_report.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alloc_test/results/alloc_strat_opti_tester_recap.csv" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/results/alloc_strat_opti_tester_recap.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alloc_test/signal_generator/signal_sender.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/signal_generator/signal_sender.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alloc_test/strategies/strat_optimizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/strategies/strat_optimizer.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -20,7 +30,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="opti" />
+        <entry key="$PROJECT_DIR$" value="uncomment" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -33,78 +43,36 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.bt_first.executor&quot;: &quot;Run&quot;,
-    &quot;Python.bt_test (1).executor&quot;: &quot;Debug&quot;,
-    &quot;Python.bt_test.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.single_file.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Admin/Documents/Pro/projets_code/python/port_rebal&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.bt_first.executor": "Run",
+    "Python.bt_test (1).executor": "Debug",
+    "Python.bt_test.executor": "Run",
+    "Python.main (1).executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.main_prod.executor": "Run",
+    "Python.main_test.executor": "Debug",
+    "Python.single_file.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/Admin/Documents/Pro/projets_code/python/port_rebal/alloc_test/main_test.py"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal" />
       <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\utils" />
       <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\strategies" />
       <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\signal_generator" />
       <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\reporting" />
-      <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\indicators" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\config" />
       <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\bt_second" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.main">
-    <configuration name="bt_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="port_rebal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/bt_second" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/bt_second/bt_test.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="port_rebal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/alloc_test" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/alloc_test/main.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="single_file" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.main_test">
+    <configuration name="main_prod" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="port_rebal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -118,7 +86,30 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/single_file.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/alloc_prod/main_prod.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main_test" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="port_rebal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.12 (trading_platform)" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/alloc_test/main_test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -128,13 +119,13 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.bt_test" />
-      <item itemvalue="Python.main" />
-      <item itemvalue="Python.single_file" />
+      <item itemvalue="Python.main_prod" />
+      <item itemvalue="Python.main_test" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.main" />
+        <item itemvalue="Python.main_prod" />
+        <item itemvalue="Python.main_test" />
         <item itemvalue="Python.bt_test" />
       </list>
     </recent_temporary>
@@ -179,17 +170,38 @@
       <option name="project" value="LOCAL" />
       <updated>1725915505048</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="uncomment live positions">
+      <option name="closed" value="true" />
+      <created>1726135584205</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1726135584205</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="first day" />
     <MESSAGE value="create optimization process" />
     <MESSAGE value="restructure script and manage positions traded" />
-    <option name="LAST_COMMIT_MESSAGE" value="restructure script and manage positions traded" />
+    <MESSAGE value="uncomment live positions" />
+    <option name="LAST_COMMIT_MESSAGE" value="uncomment live positions" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/alloc_prod/data_management/data_retriever.py</url>
+          <line>35</line>
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/alloc_test/signal_generator/signal_sender.py</url>
+          <line>33</line>
+          <option name="timeStamp" value="29" />
+        </line-breakpoint>
+      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">
@@ -205,6 +217,8 @@
         <watch expression="self.done" />
         <watch expression="features" language="Python" />
         <watch expression="split_data" />
+        <watch expression="data_frequency_mapping" />
+        <watch expression="start_date" />
       </configuration>
     </watches-manager>
   </component>

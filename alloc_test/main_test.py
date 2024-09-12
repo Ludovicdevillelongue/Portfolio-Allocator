@@ -1,17 +1,17 @@
 import os
+import time
 
 from sklearn.ensemble import RandomForestRegressor
-
 from alloc_test.signal_generator.signal_sender import LiveStrategyRunner
-from broker.broker_connect import AlpacaConnect
-from data_management.data_handler import DataHandler
-from indicators.performance_indicators import Metrics
-from strategies.strat_creator import ERC, MeanVar
+from alloc_test.broker.broker_connect import AlpacaConnect
+from alloc_test.data_management.data_handler import DataHandler
+from alloc_test.indicators.performance_indicators import Metrics
+from alloc_test.strategies.strat_creator import ERC, MeanVar
 from xgboost import XGBRegressor
-from strategies.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm
-from backtest.benchmark_portfolio import BenchmarkPortfolio
-from backtest.backtester import Backtester
-from data_management.data_retriever import AlpacaDataRetriever
+from alloc_test.strategies.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm
+from alloc_test.backtest.benchmark_portfolio import BenchmarkPortfolio
+from alloc_test.backtest.backtester import Backtester
+from alloc_test.data_management.data_retriever import AlpacaDataRetriever
 
 
 class PortfolioAllocator:
@@ -27,7 +27,7 @@ class PortfolioAllocator:
 
     def run(self):
         estimation_period = 30
-        dash_port = 7000
+        dash_port = 6000
         iterations = 2
         strategies = {
             'ERC': ERC()
@@ -86,14 +86,15 @@ class PortfolioAllocator:
 
         # Step 3: Set up strategies and run backtests with multiple strategies
         print("Running backtests...")
-        backtester = Backtester(data_handler, adjusted_close_prices, asset_returns, initial_capital, strategies, estimation_period, dash_port)
+        backtester = Backtester(data_handler, adjusted_close_prices, asset_returns, benchmark_returns, initial_capital,
+                                strategies, estimation_period, dash_port)
 
         backtester.run_backtest(param_grids=param_grids, iterations=iterations,
                                 optimization_algorithms=optimization_algorithms, strat_opti_bt_csv=strat_opti_bt_csv)
 
         # Get the best strategy
         best_strategy_name, best_sharpe = backtester.get_best_strategy()
-        final_weights = backtester.strategy_results[best_strategy_name]['weights'].iloc[-1]
+        final_weights = backtester.strategy_metrics[best_strategy_name]['weights'].iloc[-1]
         print(f"Best strategy: {best_strategy_name} with Sharpe ratio: {best_sharpe}")
 
         # Report the backtest results
@@ -108,7 +109,7 @@ class PortfolioAllocator:
 if __name__ == "__main__":
     data_frequency ='day'
     broker = 'alpaca'
-    symbols = ['TSLA', 'NVDA']
+    symbols = ['TSLA', 'NVDA', 'MSFT', 'AAPL']
     start_date = '2024-01-01'
     end_date = '2024-09-10'
     initial_capital = 100000

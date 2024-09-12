@@ -31,8 +31,11 @@ class LiveStrategyRunner:
         for symbol in list(set(positions_symbols + bt_symbols)):
             try:
                 target_position_value = portfolio_value * self.final_weights[symbol]
-                target_qty = target_position_value / current_prices[symbol]
-                current_qty = float(broker_metrics.get_symbol_position(symbol).qty)
+                target_qty = target_position_value / float(current_prices[symbol])
+                try:
+                    current_qty = float(broker_metrics.get_symbol_position(symbol).qty)
+                except Exception as e:
+                    current_qty= 0
                 order_qty = target_qty - current_qty
                 if order_qty != 0:
                     side = 'buy' if order_qty > 0 else 'sell'
