@@ -4,86 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fdef956d-1420-400f-9f24-c8c4a5fcb8d5" name="Changes" comment="create optimization process">
-      <change afterPath="$PROJECT_DIR$/alloc_test/backtest/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/backtest/backtester.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/backtest/benchmark_portfolio.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/broker/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/broker/broker_connect.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/broker/broker_metrics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/broker/broker_order.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/config/broker_config.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/config/bt_config.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/data_management/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/data_management/data_handler.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/data_management/data_retriever.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/indicators/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/reporting/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/reporting/live_report.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/signal_generator/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/signal_generator/dl_predictor.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/signal_generator/ml_predictor.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/strategies/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/strategies/strat_creator.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/utils/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/utils/data_utilities.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/single_file.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/port_rebal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/port_rebal.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bt_first.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bt_second/alloc_strat_opti_tester_recap.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bt_second/bt_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bt_second/optimizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/strategies/strat_optimizer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bt_second/reporting.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/reporting/bt_report.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bt_structure/backtester.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/indicators/performance_indicators.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bt_structure/data_handler.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bt_structure/main.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bt_structure/portfolio_allocator.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/backtest/portfolio.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bt_structure/portfolio_live.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/signal_generator/signal_sender.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bt_structure/reporting.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bt_structure/strategies.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/interesting_times_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/performance_metrics.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/positions_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/pyfolio_report.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/returns_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/ERC/transactions_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/HierarchicalRiskParity/interesting_times_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/HierarchicalRiskParity/performance_metrics.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/HierarchicalRiskParity/positions_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/HierarchicalRiskParity/pyfolio_report.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/HierarchicalRiskParity/returns_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/HierarchicalRiskParity/transactions_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MaximumDivergence/interesting_times_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MaximumDivergence/performance_metrics.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MaximumDivergence/positions_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MaximumDivergence/pyfolio_report.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MaximumDivergence/returns_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MaximumDivergence/transactions_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/interesting_times_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/performance_metrics.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/positions_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/pyfolio_report.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/returns_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MeanVar/transactions_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MinVol/interesting_times_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MinVol/performance_metrics.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MinVol/positions_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MinVol/pyfolio_report.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MinVol/returns_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/MinVol/transactions_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/OneOverN/interesting_times_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/OneOverN/performance_metrics.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/OneOverN/positions_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/OneOverN/pyfolio_report.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/OneOverN/returns_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/OneOverN/transactions_plot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyfolio_results/correlation_heatmap.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reporting.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/todo" beforeDir="false" afterPath="$PROJECT_DIR$/todo" afterDir="false" />
-    </list>
+    <list default="true" id="fdef956d-1420-400f-9f24-c8c4a5fcb8d5" name="Changes" comment="restructure script and manage positions traded" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -112,19 +33,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.bt_first.executor": "Run",
-    "Python.bt_test (1).executor": "Debug",
-    "Python.bt_test.executor": "Run",
-    "Python.main (1).executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.single_file.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/Admin/Documents/Pro/projets_code/python/port_rebal"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.bt_first.executor&quot;: &quot;Run&quot;,
+    &quot;Python.bt_test (1).executor&quot;: &quot;Debug&quot;,
+    &quot;Python.bt_test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.single_file.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Admin/Documents/Pro/projets_code/python/port_rebal&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\utils" />
@@ -207,9 +128,9 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.single_file" />
       <item itemvalue="Python.bt_test" />
       <item itemvalue="Python.main" />
+      <item itemvalue="Python.single_file" />
     </list>
     <recent_temporary>
       <list>
@@ -264,7 +185,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="first day" />
     <MESSAGE value="create optimization process" />
-    <option name="LAST_COMMIT_MESSAGE" value="create optimization process" />
+    <MESSAGE value="restructure script and manage positions traded" />
+    <option name="LAST_COMMIT_MESSAGE" value="restructure script and manage positions traded" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
