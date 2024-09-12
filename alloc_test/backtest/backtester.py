@@ -9,10 +9,11 @@ from alloc_test.strategies.strat_optimizer import StrategyOptimizer
 import pyfolio as pf
 
 class StrategyRunner:
-    def __init__(self, data_handler, close_prices, asset_returns, initial_capital, estimation_period):
+    def __init__(self, data_handler, close_prices, asset_returns,benchmark_returns, initial_capital, estimation_period):
         self.data_handler = data_handler
         self.close_prices = close_prices
         self.asset_returns=asset_returns
+        self.benchmark_returns=benchmark_returns
         self.initial_capital = initial_capital
         self.estimation_period = estimation_period
         self.strategy_results = {}
@@ -33,21 +34,22 @@ class StrategyRunner:
             portfolio.rebalance_portfolio(strategy_instance, current_prices, historical_returns, date)
 
         # Store results for the strategy
-        return Metrics(self.close_prices).compute_strategy_metrics(portfolio)
+        return Metrics(self.close_prices).compute_strategy_metrics(portfolio, self.benchmark_returns)
 
 
 class Backtester:
-    def __init__(self, data_handler, close_prices, asset_returns, initial_capital, strategies, estimation_period, dash_port):
+    def __init__(self, data_handler, close_prices, asset_returns, benchmark_returns, initial_capital, strategies, estimation_period, dash_port):
         self.data_handler = data_handler
         self.close_prices=close_prices
         self.asset_returns = asset_returns
+        self.benchmark_returns = benchmark_returns
         self.initial_capital = initial_capital
         self.strategies = strategies
         self.estimation_period = estimation_period
         self.dash_port=dash_port
-        self.strategy_runner=StrategyRunner(self.data_handler, self.close_prices, self.asset_returns,
+        self.strategy_runner=StrategyRunner(self.data_handler, self.close_prices, self.asset_returns, self.benchmark_returns,
                                self.initial_capital, self.estimation_period)
-        self.strategy_results = {}
+        self.strategy_metrics = {}
 
 
 
@@ -76,9 +78,9 @@ class Backtester:
                     setattr(strategy_instance, param_name, param_value)
 
                 # Backtest the strategy with the best parameters
-                self.strategy_results[strategy_name]=self.strategy_runner.run_allocation(strategy_instance)
-                self.strategy_results[strategy_name]['best_params']=best_params
-                self.strategy_results[strategy_name]['best_opti_algo']=best_opti_algo
+                self.strategy_metrics[strategy_name]=self.strategy_runner.run_allocation(strategy_instance)
+                self.strategy_metrics[strategy_name]['best_params']=str(best_params)
+                self.strategy_metrics[strategy_name]['best_opti_algo']=best_opti_algo
 
     def report_backtest(self, benchmark_returns):
         pass
@@ -88,7 +90,7 @@ class Backtester:
         # PyfolioReport('../pyfolio_results')._generate_heatmap(self.asset_returns)
         backtest_port = self.dash_port + 1000
         dashboard_run_server = threading.Thread(
-            target=lambda: DashReport(self.asset_returns, self.strategy_results, benchmark_returns, backtest_port).run_server())
+            target=lambda: DashReport(self.asset_returns, self.strategy_metrics, backtest_port).run_server())
         dashboard_run_server.daemon = True  # Ensures the thread is killed when the main program exits
         dashboard_run_server.start()
 
@@ -98,8 +100,8 @@ class Backtester:
         """Find the best strategy overall after all have been backtested."""
         best_strategy = None
         best_sharpe = float('-inf')
-        for strategy_name, result in self.strategy_results.items():
-            sharpe_ratio = pf.timeseries.sharpe_ratio(result['portfolio_returns'])
+        for strategy_name, result in self.strategy_metrics.items():
+            sharpe_ratio = result['sharpe_ratio']
             if sharpe_ratio > best_sharpe:
                 best_sharpe = sharpe_ratio
                 best_strategy = strategy_name
