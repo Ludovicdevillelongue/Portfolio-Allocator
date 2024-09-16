@@ -8,6 +8,7 @@ class Portfolio:
         self.position_history = {}
         self.price_history = {}
         self.transaction_history = []
+        self.cash_history = {}
 
     def rebalance_portfolio(self, allocation_strategy, current_prices, historical_returns, date):
         # Calculate portfolio value
@@ -41,6 +42,7 @@ class Portfolio:
         self.cash_balance -= qty_change * price
 
     def _record_portfolio_state(self, date, current_prices, target_weights):
+        self.cash_history[date]=self.cash_balance
         self.weight_history[date] = target_weights
-        self.position_history[date] = {**self.last_positions, 'cash': self.cash_balance}
+        self.position_history[date] = {**self.last_positions}
         self.price_history[date] = current_prices

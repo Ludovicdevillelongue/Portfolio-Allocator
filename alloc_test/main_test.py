@@ -2,10 +2,11 @@ import os
 import time
 
 from sklearn.ensemble import RandomForestRegressor
-from alloc_test.signal_generator.signal_sender import LiveStrategyRunner
 from alloc_test.broker.broker_connect import AlpacaConnect
 from alloc_test.data_management.data_handler import DataHandler
 from alloc_test.indicators.performance_indicators import Metrics
+from alloc_test.live.live_runner import LiveAllocationRunner
+from alloc_test.reporting.live_report import LiveDashReport
 from alloc_test.strategies.strat_creator import ERC, MeanVar
 from xgboost import XGBRegressor
 from alloc_test.strategies.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm
@@ -94,17 +95,27 @@ class PortfolioAllocator:
 
         # Get the best strategy
         best_strategy_name, best_sharpe = backtester.get_best_strategy()
-        final_weights = backtester.strategy_metrics[best_strategy_name]['weights'].iloc[-1]
+        strategy_info={
+             'strategy_name':best_strategy_name,
+            'strategy_params':backtester.strategies_metrics[best_strategy_name]['best_params'],
+            'opti_algo':backtester.strategies_metrics[best_strategy_name]['best_opti_algo'],
+            'final_weights':backtester.strategies_metrics[best_strategy_name]['weights'].iloc[-1]
+        }
         print(f"Best strategy: {best_strategy_name} with Sharpe ratio: {best_sharpe}")
 
         # Report the backtest results
-        backtester.report_backtest(benchmark_returns)
+        backtester.report_backtest()
 
         # Step 6: Initialize LiveTrading with the selected strategy
         print("Starting live trading...")
-        live_trader = LiveStrategyRunner(api, broker_config_path, symbols, final_weights,
-                 initial_capital, data_frequency)
-        live_trader.run()
+        live_allocation_runner = LiveAllocationRunner(api, broker_config_path, symbols, strategy_info, initial_capital,
+                                           data_frequency)
+        live_allocation_runner.reallocate()
+        # while True:
+        #     live_allocation_runner.get_live_metrics()
+        #     time.sleep(60)
+        dash_report = LiveDashReport(live_allocation_runner=live_allocation_runner, port=8050)
+        dash_report.run_server()
 
 if __name__ == "__main__":
     data_frequency ='day'

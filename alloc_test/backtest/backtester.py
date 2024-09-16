@@ -49,7 +49,7 @@ class Backtester:
         self.dash_port=dash_port
         self.strategy_runner=StrategyRunner(self.data_handler, self.close_prices, self.asset_returns, self.benchmark_returns,
                                self.initial_capital, self.estimation_period)
-        self.strategy_metrics = {}
+        self.strategies_metrics = {}
 
 
 
@@ -78,11 +78,11 @@ class Backtester:
                     setattr(strategy_instance, param_name, param_value)
 
                 # Backtest the strategy with the best parameters
-                self.strategy_metrics[strategy_name]=self.strategy_runner.run_allocation(strategy_instance)
-                self.strategy_metrics[strategy_name]['best_params']=str(best_params)
-                self.strategy_metrics[strategy_name]['best_opti_algo']=best_opti_algo
+                self.strategies_metrics[strategy_name]=self.strategy_runner.run_allocation(strategy_instance)
+                self.strategies_metrics[strategy_name]['best_params']=str(best_params)
+                self.strategies_metrics[strategy_name]['best_opti_algo']=best_opti_algo
 
-    def report_backtest(self, benchmark_returns):
+    def report_backtest(self):
         pass
         # for strat_name, results in self.strategy_results.items():
         #     PyfolioReport('../pyfolio_results')._generate_pyfolio_report(strat_name, results['portfolio_returns'],
@@ -90,7 +90,7 @@ class Backtester:
         # PyfolioReport('../pyfolio_results')._generate_heatmap(self.asset_returns)
         backtest_port = self.dash_port + 1000
         dashboard_run_server = threading.Thread(
-            target=lambda: DashReport(self.asset_returns, self.strategy_metrics, backtest_port).run_server())
+            target=lambda: DashReport(self.asset_returns, self.strategies_metrics, backtest_port).run_server())
         dashboard_run_server.daemon = True  # Ensures the thread is killed when the main program exits
         dashboard_run_server.start()
 
@@ -100,7 +100,7 @@ class Backtester:
         """Find the best strategy overall after all have been backtested."""
         best_strategy = None
         best_sharpe = float('-inf')
-        for strategy_name, result in self.strategy_metrics.items():
+        for strategy_name, result in self.strategies_metrics.items():
             sharpe_ratio = result['sharpe_ratio']
             if sharpe_ratio > best_sharpe:
                 best_sharpe = sharpe_ratio

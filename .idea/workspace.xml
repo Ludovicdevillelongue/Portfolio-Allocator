@@ -4,16 +4,25 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fdef956d-1420-400f-9f24-c8c4a5fcb8d5" name="Changes" comment="uncomment live positions">
+    <list default="true" id="fdef956d-1420-400f-9f24-c8c4a5fcb8d5" name="Changes" comment="manage data and metrics calculation">
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/live/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/live/live_database_manager.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/live/live_portfolio.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/alloc_test/live/live_runner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/alloc_test/backtest/backtester.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/backtest/backtester.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/alloc_test/data_management/data_retriever.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/data_management/data_retriever.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alloc_test/backtest/portfolio.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/backtest/portfolio.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alloc_test/broker/broker_metrics.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/broker/broker_metrics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alloc_test/config/broker_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/config/broker_config.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/alloc_test/indicators/performance_indicators.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/indicators/performance_indicators.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/alloc_test/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/main_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alloc_test/main_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/main_test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/alloc_test/reporting/bt_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/reporting/bt_report.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alloc_test/reporting/live_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/reporting/live_report.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/alloc_test/results/alloc_strat_opti_tester_recap.csv" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/results/alloc_strat_opti_tester_recap.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/alloc_test/signal_generator/signal_sender.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/signal_generator/signal_sender.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/alloc_test/strategies/strat_optimizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/strategies/strat_optimizer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alloc_test/signal_generator/signal_sender.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/alloc_test/utils/data_utilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/utils/data_utilities.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,14 +57,16 @@
     "Python.bt_first.executor": "Run",
     "Python.bt_test (1).executor": "Debug",
     "Python.bt_test.executor": "Run",
+    "Python.data_utilities.executor": "Debug",
     "Python.main (1).executor": "Run",
     "Python.main.executor": "Run",
     "Python.main_prod.executor": "Run",
-    "Python.main_test.executor": "Debug",
+    "Python.main_test.executor": "Run",
     "Python.single_file.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/Admin/Documents/Pro/projets_code/python/port_rebal/alloc_test/main_test.py"
+    "last_opened_file_path": "C:/Users/Admin/Documents/Pro/projets_code/python/port_rebal/alloc_test/utils/data_utilities.py"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -72,7 +83,7 @@
     </key>
   </component>
   <component name="RunManager" selected="Python.main_test">
-    <configuration name="main_prod" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+    <configuration name="data_utilities" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="port_rebal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -86,7 +97,7 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/alloc_prod/main_prod.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/alloc_test/utils/data_utilities.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -119,14 +130,12 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.main_prod" />
       <item itemvalue="Python.main_test" />
+      <item itemvalue="Python.data_utilities" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.main_prod" />
         <item itemvalue="Python.main_test" />
-        <item itemvalue="Python.bt_test" />
       </list>
     </recent_temporary>
   </component>
@@ -197,9 +206,9 @@
           <option name="timeStamp" value="14" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/alloc_test/signal_generator/signal_sender.py</url>
-          <line>33</line>
-          <option name="timeStamp" value="29" />
+          <url>file://$PROJECT_DIR$/alloc_test/utils/data_utilities.py</url>
+          <line>8</line>
+          <option name="timeStamp" value="163" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -219,6 +228,9 @@
         <watch expression="split_data" />
         <watch expression="data_frequency_mapping" />
         <watch expression="start_date" />
+        <watch expression="self.strategy_name" />
+        <watch expression="metrics['asset_cumulative_returns']" />
+        <watch expression="metrics['portfolio_pnl']" />
       </configuration>
     </watches-manager>
   </component>

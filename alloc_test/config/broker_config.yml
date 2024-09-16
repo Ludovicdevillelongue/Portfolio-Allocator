@@ -1,6 +1,6 @@
 alpaca:
-  api_key: PK2WRXZLTB6X52HFTSWB
-  api_secret : 2Mrtb6owDag7daoyR5Ifie581EamxALrvHpOORfB
+  api_key: PK8ZVXY9FUOCU3AIOTCW
+  api_secret : 45if4anNU9SveH3VukbuNyju8PXfc50FmTOO6kdQ
   transaction_costs: 0.00
   time_in_force: day
   order_type: market

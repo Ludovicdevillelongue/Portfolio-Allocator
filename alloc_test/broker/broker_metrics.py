@@ -60,6 +60,10 @@ class AlpacaPlatformMetrics(TradingPlatform):
         account = self.api.get_account()
         return float(account.equity)
 
+    def get_portfolio_cash(self):
+        account = self.api.get_account()
+        return float(account.cash)
+
     def get_all_orders(self):
         orders = self.api.list_orders(status='all')
         orders_list = [order._raw for order in orders]
