@@ -79,21 +79,24 @@ class ShapReport:
 
 
 class DashReport:
-    def __init__(self, asset_returns, strategy_results, port):
+    def __init__(self, asset_returns, strategies_metrics, port):
         self.asset_returns=asset_returns
-        self.strategy_metrics = strategy_results
+        self.strategies_metrics = strategies_metrics
+        self.dynamic_metrics=['rolling_sharpe', 'rolling_beta', 'portfolio_values', 'portfolio_cumulative_returns',
+                              'portfolio_pnl', 'portfolio_cum_pnl', 'cash']
+        self.static_metrics = ['best_opti_algo', 'best_params', 'annual_return', 'annual_volatility', 'sharpe_ratio', 'calmar_ratio', 'max_drawdown',
+                               'omega_ratio', 'sortino_ratio','tail_ratio', 'daily_var']
+        self.asset_metrics=['weights', 'asset_prices', 'positions', 'market_values', 'asset_pnl', 'asset_cum_pnl', 'asset_cumulative_returns']
         self.app = dash.Dash(__name__)
         self._setup_layout()
         self._setup_callbacks()
         self.port = port
 
     def _prepare_data_for_table(self):
-        performance_metrics=['best_opti_algo', 'best_params', 'annual_return', 'annual_volatility', 'sharpe_ratio',
-        'calmar_ratio', 'max_drawdown', 'omega_ratio', 'sortino_ratio', 'tail_ratio', 'daily_var']
 
         return [{'Strategy': s, **{k: round(v, 2) if isinstance(v, (float, int)) else v
-                                   for k, v in m.items() if k in performance_metrics}}
-                for s, m in self.strategy_metrics.items()]
+                                   for k, v in m.items() if k in self.static_metrics}}
+                for s, m in self.strategies_metrics.items()]
 
     def _generate_correlation_heatmap(self):
         # Generate the correlation matrix and create a static heatmap
@@ -130,15 +133,15 @@ class DashReport:
 
             html.H1('Strategies Rolling Performance Metrics'),
             *[dcc.Graph(id=f'graph-{metric}', figure={'data': [go.Scatter(x=metrics.index, y=metrics, mode='lines', name=strategy)
-                for strategy, data in self.strategy_metrics.items() for metrics in [data[metric]]], 'layout':
+                for strategy, data in self.strategies_metrics.items() for metrics in [data[metric]]], 'layout':
                 go.Layout(title=f'{metric.capitalize()} Comparison Across Strategies', xaxis={'title': 'Date'}, yaxis={'title': metric.replace("_", " ").title()})})
-              for metric in ['rolling_sharpe', 'rolling_beta', 'portfolio_cumulative_returns', 'portfolio_pnl', 'portfolio_cum_pnl']],
+              for metric in self.dynamic_metrics],
 
             html.H1('Asset-Level Metrics Per Strategy'),
-            dcc.Dropdown(id='strategy-dropdown', options=[{'label': s, 'value': s} for s in self.strategy_metrics.keys()],
-                         value=list(self.strategy_metrics.keys())[0], clearable=False, style={'width': '50%'}),
+            dcc.Dropdown(id='strategy-dropdown', options=[{'label': s, 'value': s} for s in self.strategies_metrics.keys()],
+                         value=list(self.strategies_metrics.keys())[0], clearable=False, style={'width': '50%'}),
             *[dcc.Graph(id=f'asset-{metric}-graph') for metric in
-              ['weights', 'asset_prices', 'positions', 'asset_pnl','asset_cum_pnl', 'asset_cumulative_returns']],
+              self.asset_metrics],
             # Add asset correlation heatmap graph
             html.H1('Asset Correlation Heatmap'),
             dcc.Graph(id='correlation-heatmap', figure=self._generate_correlation_heatmap())  # Use the static heatmap figure
@@ -146,8 +149,7 @@ class DashReport:
 
     def _setup_callbacks(self):
         @self.app.callback(
-            [Output(f'asset-{metric}-graph', 'figure') for metric in ['weights',
-                                                'asset_prices', 'positions', 'asset_pnl', 'asset_cum_pnl', 'asset_cumulative_returns']],
+            [Output(f'asset-{metric}-graph', 'figure') for metric in self.asset_metrics],
             [Input('strategy-dropdown', 'value')]
         )
         def update_asset_graphs(selected_strategy):
@@ -163,8 +165,8 @@ class DashReport:
                         yaxis={'title': metric_name.replace("_", " ").title()}
                     )
                 }
-                for metric_name, metric in self.strategy_metrics[selected_strategy].items()
-                if metric_name in ['weights','asset_prices', 'positions', 'asset_pnl','asset_cum_pnl', 'asset_cumulative_returns']
+                for metric_name, metric in self.strategies_metrics[selected_strategy].items()
+                if metric_name in self.asset_metrics
             ]
 
             return figures
@@ -231,7 +233,8 @@ class ExcelReport:
             hit = hit_ratio.mean()
             max_dd_info = self.calculate_maximum_drawdown(df)
 
-            summary_ws.append([strat_name, sharpe, hit, sortino, max_dd_info['max_drawdown'], max_dd_info['recovery_duration'], max_dd_info['max_drawdown_date'], max_dd_info['recovery_date']])
+            summary_ws.append([strat_name, sharpe, hit, sortino, max_dd_info['max_drawdown'],
+                               max_dd_info['recovery_duration'], max_dd_info['max_drawdown_date'], max_dd_info['recovery_date']])
 
             # Populate each strategy sheet
             strategy_ws = wb[strat_name]
@@ -286,11 +289,11 @@ class ExcelReport:
                     cell.border = used_cell_border_thin
             start_row += len(df) + 3  # Add space for the next DataFrame
 
-    def plot_performance(self, strategy_results, output_dir):
+    def plot_performance(self, strategies_metrics, output_dir):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        for strategy, metrics in strategy_results.items():
+        for strategy, metrics in strategies_metrics.items():
             fig, axs = plt.subplots(2, 2, figsize=(12, 8))
 
             # Cumulative PnL plot
