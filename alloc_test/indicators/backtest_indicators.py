@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 import pyfolio as pf
-class Metrics:
+
+class BacktestMetrics:
     def __init__(self, close_prices):
         self.close_prices = close_prices
         self.asset_returns = self.compute_asset_returns()
@@ -12,27 +13,29 @@ class Metrics:
     def compute_asset_pnl(self, portfolio):
         asset_pnl = pd.DataFrame(index=portfolio.position_history.keys(), columns=portfolio.symbols, data=0.0)
         sorted_dates = sorted(portfolio.position_history.keys())
+
         for i in range(1, len(sorted_dates)):
             current_date = sorted_dates[i]
             previous_date = sorted_dates[i - 1]
-            for symbol in portfolio.position_history[
-                previous_date].keys():
-                if symbol in portfolio.price_history[previous_date] and symbol in portfolio.price_history[current_date]:
-                    position = portfolio.position_history[previous_date].get(symbol, 0)
-                    previous_price = portfolio.price_history[previous_date].get(symbol)
-                    current_price = portfolio.price_history[current_date].get(symbol)
-                    if position != 0:
-                        price_change = current_price - previous_price
-                        asset_pnl.at[current_date, symbol] = position * price_change
+
+            for symbol in portfolio.symbols:
+                position = portfolio.position_history[previous_date][symbol]
+                previous_price = portfolio.price_history[previous_date][symbol]
+                current_price = portfolio.price_history[current_date][symbol]
+                if position != 0:
+                    price_change = current_price - previous_price
+                    asset_pnl.at[current_date, symbol] = position * price_change
         return asset_pnl
 
     def compute_portfolio_pnl_returns(self, portfolio):
         portfolio_values = pd.Series(index=portfolio.position_history.keys(), dtype=float)
         sorted_dates = sorted(portfolio.position_history.keys())
         for date in sorted_dates:
-            portfolio_value = sum(
-                portfolio.position_history[date].get(symbol, 0) * portfolio.price_history[date].get(symbol, 0)
-                for symbol in portfolio.position_history[date].keys())
+            cash_balance = portfolio.cash_history[date]
+            portfolio_value = cash_balance + sum(
+                portfolio.position_history[date][symbol] * portfolio.price_history[date][symbol]
+                for symbol in portfolio.symbols
+            )
             portfolio_values[date] = portfolio_value
         portfolio_pnl = portfolio_values.diff().fillna(0)
         portfolio_returns = portfolio_values.pct_change().replace([np.inf, -np.inf], np.nan).dropna()
@@ -40,17 +43,11 @@ class Metrics:
 
     def compute_strategy_metrics(self, portfolio, benchmark_returns):
         metrics = {}
-        metrics['cash'] = pd.Series(portfolio.cash_history, name='Cash_Balance')
-        metrics['positions'] = (pd.DataFrame(portfolio.position_history).T).fillna(0)
-        available_dates = metrics['positions'].index
-        metrics['asset_prices'] = self.close_prices.loc[
-            available_dates, metrics['positions'].columns.intersection(self.close_prices.columns)]
-        try:
-            metrics['asset_returns'] = self.asset_returns.loc[
-                available_dates[1:], metrics['positions'].columns.intersection(self.asset_returns.columns)]
-        except Exception as e:
-            metrics['asset_returns']=pd.DataFrame()
+        metrics['cash']=pd.DataFrame.from_dict(portfolio.cash_history, orient='index', columns=['Cash_Balance'])
+        metrics['positions'] = pd.DataFrame(portfolio.position_history).T
+        metrics['asset_prices'] = self.close_prices[self.close_prices.index.isin(metrics['positions'].index)]
         metrics['market_values'] = metrics['positions'].multiply(metrics['asset_prices'], axis=0)
+        metrics['asset_returns'] = self.asset_returns[self.asset_returns.index.isin(metrics['positions'].index)]
         metrics['asset_pnl'] = self.compute_asset_pnl(portfolio)
         metrics['portfolio_values'], metrics['portfolio_pnl'], metrics[
             'portfolio_returns'] = self.compute_portfolio_pnl_returns(portfolio)

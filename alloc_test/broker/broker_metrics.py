@@ -33,12 +33,6 @@ class AlpacaPlatformMetrics(TradingPlatform):
     def __init__(self, api, data_frequency):
         self.api=api
         self.data_frequency = data_frequency
-        self.equity_value_tracker_csv = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                                     f'results\\{self.data_frequency}_broker_equity_value.csv')
-        self.pos_returns_tracker_yml = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                                    f'results\\{self.data_frequency}_broker_pos_ret.yml')
-        self.ptf_metrics_csv = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                            f'results\\{self.data_frequency}_broker_ptf_metrics.csv')
 
 
     def get_account_info(self):
@@ -151,16 +145,3 @@ class AlpacaPlatformMetrics(TradingPlatform):
     def get_broker_portfolio_history(self):
         portfolio_history = self.api.get_portfolio_history(period='1W', timeframe='1Min', extended_hours=True).df
         return portfolio_history
-
-    def get_all_portfolio_history(self):
-        df_ptf_last_day = self.get_broker_portfolio_history()
-        df_ptf_last_day = df_ptf_last_day.tz_convert('Europe/Paris')
-        try:
-            df_ptf_history = pd.read_csv(self.equity_value_tracker_csv, header=[0], index_col=[0])
-            df_ptf_history.index = pd.to_datetime(df_ptf_history.index).tz_convert('Europe/Paris')
-            df_ptf = df_ptf_last_day.combine_first(df_ptf_history)
-        except Exception as e:
-            df_ptf = df_ptf_last_day
-        df_ptf = df_ptf[df_ptf['equity'] > 100]
-        df_ptf.to_csv(self.equity_value_tracker_csv, mode='w', header=True, index=True)
-        return df_ptf

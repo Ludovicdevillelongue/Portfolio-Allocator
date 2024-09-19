@@ -1,10 +1,11 @@
+import json
 import os
 import time
 
 from sklearn.ensemble import RandomForestRegressor
 from alloc_test.broker.broker_connect import AlpacaConnect
 from alloc_test.data_management.data_handler import DataHandler
-from alloc_test.indicators.performance_indicators import Metrics
+from alloc_test.indicators.backtest_indicators import BacktestMetrics
 from alloc_test.live.live_runner import LiveAllocationRunner
 from alloc_test.reporting.live_report import LiveDashReport
 from alloc_test.strategies.strat_creator import ERC, MeanVar
@@ -58,8 +59,9 @@ class PortfolioAllocator:
         optimization_algorithms = [RandomSearchAlgorithm(), GridSearchAlgorithm()]
 
         # path to get config save results of optimization process
-        broker_config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../alloc_test/config/broker_config.yml'))
-        strat_opti_bt_csv = os.path.abspath(os.path.join(os.path.dirname(__file__), '../alloc_test/results/alloc_strat_opti_tester_recap.csv'))
+        folder_path =os.path.abspath(os.path.dirname(__file__))
+        broker_config_path = os.path.join(folder_path, '../config/broker_config.yml')
+        strat_opti_bt_csv = os.path.join(folder_path, '../results/alloc_strat_opti_tester_recap.csv')
         with open(strat_opti_bt_csv, 'w') as file:
             pass
 
@@ -79,7 +81,7 @@ class PortfolioAllocator:
         adjusted_volumes = data_handler.adjust_volumes_for_splits(volumes, stock_split_ratios)
 
         # Compute returns
-        asset_returns=Metrics(adjusted_close_prices).compute_asset_returns()
+        asset_returns=BacktestMetrics(adjusted_close_prices).compute_asset_returns()
 
      # Step 2: Compute benchmark returns using the BenchmarkPortfolio
         benchmark_portfolio = BenchmarkPortfolio(symbols, adjusted_volumes)
@@ -99,8 +101,10 @@ class PortfolioAllocator:
              'strategy_name':best_strategy_name,
             'strategy_params':backtester.strategies_metrics[best_strategy_name]['best_params'],
             'opti_algo':backtester.strategies_metrics[best_strategy_name]['best_opti_algo'],
-            'final_weights':backtester.strategies_metrics[best_strategy_name]['weights'].iloc[-1]
+            'final_weights':(backtester.strategies_metrics[best_strategy_name]['weights'].iloc[-1]).to_dict()
         }
+        with open(os.path.join(folder_path, 'strategy_info.json'), 'w') as json_file:
+            json.dump(strategy_info, json_file, indent=4)
         print(f"Best strategy: {best_strategy_name} with Sharpe ratio: {best_sharpe}")
 
         # Report the backtest results
@@ -108,14 +112,10 @@ class PortfolioAllocator:
 
         # Step 6: Initialize LiveTrading with the selected strategy
         print("Starting live trading...")
-        live_allocation_runner = LiveAllocationRunner(api, broker_config_path, symbols, strategy_info, initial_capital,
+        live_allocation_runner = LiveAllocationRunner(api, broker_config_path, strategy_info,
                                            data_frequency)
-        live_allocation_runner.reallocate()
-        # while True:
-        #     live_allocation_runner.get_live_metrics()
-        #     time.sleep(60)
-        dash_report = LiveDashReport(live_allocation_runner=live_allocation_runner, port=8050)
-        dash_report.run_server()
+        live_allocation_runner.reallocate(symbols)
+
 
 if __name__ == "__main__":
     data_frequency ='day'

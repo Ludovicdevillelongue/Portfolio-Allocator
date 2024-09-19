@@ -7,12 +7,10 @@ from alloc_test.data_management.data_retriever import AlpacaDataRetriever
 
 
 class LivePortfolio:
-    def __init__(self, api, broker_config_path, symbols, strategy_info, initial_capital, data_frequency, db_manager):
+    def __init__(self, api, broker_config_path, strategy_info, data_frequency, db_manager):
         self.api = api
         self.broker_config_path = broker_config_path
-        self.symbols = symbols
         self.strategy_info = strategy_info
-        self.initial_capital = initial_capital
         self.data_frequency = data_frequency
         self.db_manager = db_manager
 
@@ -27,19 +25,20 @@ class LivePortfolio:
         self.broker_metrics = AlpacaPlatformMetrics(self.api, self.data_frequency)
         self.broker_orders = AlpacaTradingBot(self.api, AlpacaConnect(self.broker_config_path).get_config())
 
-    def _fetch_current_prices(self):
+    def _fetch_current_prices(self, symbols):
         """Fetch current market prices using Alpaca's API."""
-        return AlpacaDataRetriever(self.api).get_last_market_data('minute', self.symbols)
+        return AlpacaDataRetriever(self.api).get_last_market_data('minute', symbols)
 
     def _calculate_portfolio_value(self):
         """Get the current portfolio value from Alpaca."""
         return self.broker_metrics.get_portfolio_value()
 
-    def rebalance_live_portfolio(self, date):
+    def rebalance_live_portfolio(self, date, symbols):
         """Rebalance the live portfolio to match the final target weights."""
 
         self.db_manager.save_strategy(self.strategy_info)
-        asset_prices = self._fetch_current_prices()
+        self.db_manager.save_weights(date, self.strategy_info['final_weights'])
+        asset_prices = self._fetch_current_prices(symbols)
         portfolio_value = self._calculate_portfolio_value()
         try:
             positions =self.broker_metrics.get_all_positions()
@@ -78,7 +77,6 @@ class LivePortfolio:
             positions = dict(zip(positions_prices['symbol'], positions_prices['qty']))
             prices = dict(zip(positions_prices['symbol'], positions_prices['current_price']))
         except Exception as e:
-            time.sleep(10)
             positions_prices= self.broker_metrics.get_all_orders()
             positions = dict(zip(positions_prices['symbol'], positions_prices['filled_qty']))
             prices = dict(zip(positions_prices['symbol'], positions_prices['filled_avg_price']))
@@ -88,7 +86,6 @@ class LivePortfolio:
             date,
             positions,
             prices,
-            self.strategy_info['final_weights'],
             cash_balance
         )
 
