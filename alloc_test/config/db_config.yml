@@ -1,0 +1,5 @@
+db_name: live_portfolio
+user: lddv
+password: Croatia2021@
+host: localhost
+port: 5432

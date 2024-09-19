@@ -1,0 +1,11 @@
+{
+    "strategy_name": "ERC",
+    "strategy_params": "{'regularization_strength': 0.057081654476710014}",
+    "opti_algo": "RandomSearchAlgorithm",
+    "final_weights": {
+        "AAPL": 0.25094834557281226,
+        "MSFT": 0.25089339070876765,
+        "NVDA": 0.24918742561126034,
+        "TSLA": 0.24897083810715975
+    }
+}

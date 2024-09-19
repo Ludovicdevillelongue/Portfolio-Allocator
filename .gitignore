@@ -2,5 +2,9 @@ todo
 strat_opti_csv
 bt_second/alloc_strat_opti_tester_recap.csv
 pyfolio_results
-live_db
-live/live_portfolio.db
+broker_config
+broker_config.yml
+bt_config
+bt_config.yml
+db_config
+db_config.yml

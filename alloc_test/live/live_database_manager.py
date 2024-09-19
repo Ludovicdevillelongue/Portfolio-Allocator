@@ -1,12 +1,23 @@
 import os
-import sqlite3
+import psycopg2
+import yaml
 
 
 class PortfolioDatabaseManager:
-    """Manages storage of portfolio states in a SQLite database."""
+    """Manages storage of portfolio states in a PostgreSQL database."""
 
-    def __init__(self, db_path=os.path.abspath('../port_rebal/alloc_test/live/live_portfolio.db')):
-        self.conn = sqlite3.connect(db_path)
+    def __init__(self):
+        folder_path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+        db_config_path = os.path.join(folder_path, 'config/db_config.yml')
+        with open(db_config_path, 'r') as file:
+            db_config = yaml.safe_load(file)
+        self.conn = psycopg2.connect(
+            dbname=db_config['db_name'],
+            user=db_config['user'],
+            password=db_config['password'],
+            host=db_config['host'],
+            port=db_config['port']
+        )
         self._create_tables()
 
     def _create_tables(self):
@@ -14,81 +25,81 @@ class PortfolioDatabaseManager:
 
         # Create tables for storing portfolio state
         cursor.execute('''CREATE TABLE IF NOT EXISTS portfolio_positions (
-                            timestamp TEXT,
-                            symbol TEXT,
+                            timestamp TIMESTAMP,
+                            symbol VARCHAR(10),
                             qty REAL)''')
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS portfolio_prices (
-                            timestamp TEXT,
-                            symbol TEXT,
+                            timestamp TIMESTAMP,
+                            symbol VARCHAR(10),
                             price REAL)''')
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS portfolio_weights (
-                            timestamp TEXT,
-                            symbol TEXT,
+                            timestamp TIMESTAMP,
+                            symbol VARCHAR(10),
                             weight REAL)''')
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS portfolio_cash (
-                            timestamp TEXT,
+                            timestamp TIMESTAMP,
                             cash_balance REAL)''')
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS portfolio_transactions (
                             amount REAL,
-                            date TEXT,
+                            date TIMESTAMP,
                             price REAL,
-                            symbol TEXT)''')
+                            symbol VARCHAR(10))''')
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS portfolio_strategy (
-                            strategy_name TEXT,
+                            strategy_name VARCHAR(50),
                             strategy_params TEXT,
                             opti_algo TEXT)''')
 
-
         self.conn.commit()
 
-    def save_portfolio_state(self, timestamp, positions, prices, weights, cash_balance):
+    def save_portfolio_state(self, timestamp, positions, prices, cash_balance):
         """Store the portfolio state (positions, prices, weights, and cash) in the database."""
         cursor = self.conn.cursor()
 
         # Save positions
         for symbol, qty in positions.items():
             cursor.execute('''INSERT INTO portfolio_positions (timestamp, symbol, qty)
-                              VALUES (?, ?, ?)''', (timestamp, symbol, qty))
+                              VALUES (%s, %s, %s)''', (timestamp, symbol, qty))
 
         # Save prices
         for symbol, price in prices.items():
             cursor.execute('''INSERT INTO portfolio_prices (timestamp, symbol, price)
-                              VALUES (?, ?, ?)''', (timestamp, symbol, price))
-
-        # Save weights
-        for symbol, weight in weights.items():
-            cursor.execute('''INSERT INTO portfolio_weights (timestamp, symbol, weight)
-                              VALUES (?, ?, ?)''', (timestamp, symbol, weight))
+                              VALUES (%s, %s, %s)''', (timestamp, symbol, price))
 
         # Save cash balance
         cursor.execute('''INSERT INTO portfolio_cash (timestamp, cash_balance)
-                            VALUES (?, ?)''', (timestamp, cash_balance))
+                            VALUES (%s, %s)''', (timestamp, cash_balance))
 
         self.conn.commit()
-
 
     def save_transaction(self, amount, date, price, symbol):
         """Save transaction information."""
         cursor = self.conn.cursor()
         cursor.execute('''INSERT INTO portfolio_transactions (amount, date, price, symbol)
-                          VALUES (?, ?, ?, ?)''', (amount, date, price, symbol))
+                          VALUES (%s, %s, %s, %s)''', (amount, date, price, symbol))
         self.conn.commit()
+
+    def save_weights(self, timestamp, weights):
+        # Save weights
+        cursor = self.conn.cursor()
+        for symbol, weight in weights.items():
+            cursor.execute('''INSERT INTO portfolio_weights (timestamp, symbol, weight)
+                              VALUES (%s, %s, %s)''', (timestamp, symbol, weight))
 
     def save_strategy(self, strategy_info):
         """Save strategy information."""
         cursor = self.conn.cursor()
         cursor.execute('''INSERT INTO portfolio_strategy (strategy_name, strategy_params, opti_algo)
-                          VALUES (?, ?, ?)''', (strategy_info['strategy_name'], strategy_info['strategy_params']
+                          VALUES (%s, %s, %s)''', (strategy_info['strategy_name'], strategy_info['strategy_params']
                                                                        , strategy_info['opti_algo']))
         self.conn.commit()
 
     def query_portfolio_data(self):
-        """Query portfolio data from the database between start_date and end_date."""
+        """Query portfolio data from the database."""
         cursor = self.conn.cursor()
 
         # Query positions
@@ -103,15 +114,15 @@ class PortfolioDatabaseManager:
         cursor.execute('''SELECT * FROM portfolio_weights''')
         weights_data = cursor.fetchall()
 
-        #Query Transaction Data
+        # Query Transaction Data
         cursor.execute('''SELECT * FROM portfolio_transactions''')
         transaction_data = cursor.fetchall()
 
-        #Query Cash data
+        # Query Cash data
         cursor.execute('''SELECT * FROM portfolio_cash''')
         cash_data = cursor.fetchall()
 
-        #Query Strategy Data
+        # Query Strategy Data
         cursor.execute('''SELECT * FROM portfolio_strategy''')
         selected_strategy_data = cursor.fetchall()
 

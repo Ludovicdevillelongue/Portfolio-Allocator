@@ -3,7 +3,7 @@ import time
 import numpy as np
 import pandas as pd
 from alloc_test.backtest.portfolio import Portfolio
-from alloc_test.indicators.performance_indicators import Metrics
+from alloc_test.indicators.backtest_indicators import BacktestMetrics
 from alloc_test.reporting.bt_report import DashReport
 from alloc_test.strategies.strat_optimizer import StrategyOptimizer
 import pyfolio as pf
@@ -34,7 +34,7 @@ class StrategyRunner:
             portfolio.rebalance_portfolio(strategy_instance, current_prices, historical_returns, date)
 
         # Store results for the strategy
-        return Metrics(self.close_prices).compute_strategy_metrics(portfolio, self.benchmark_returns)
+        return BacktestMetrics(self.close_prices).compute_strategy_metrics(portfolio, self.benchmark_returns)
 
 
 class Backtester:

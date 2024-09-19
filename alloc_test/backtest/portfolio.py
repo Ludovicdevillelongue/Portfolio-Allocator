@@ -46,3 +46,5 @@ class Portfolio:
         self.weight_history[date] = target_weights
         self.position_history[date] = {**self.last_positions}
         self.price_history[date] = current_prices
+
+
