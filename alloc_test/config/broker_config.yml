@@ -1,8 +1,0 @@
-alpaca:
-  api_key: PKDQ7DZ1MUP42D4UODEA
-  api_secret : 40mDio1FKcU5soF4CcuFuAm1TbdFlyEqmQlvfJzF
-  transaction_costs: 0.00
-  time_in_force: day
-  order_type: market
-
-
