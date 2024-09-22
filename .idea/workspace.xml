@@ -4,25 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fdef956d-1420-400f-9f24-c8c4a5fcb8d5" name="Changes" comment="manage data and metrics calculation">
-      <change afterPath="$PROJECT_DIR$/alloc_test/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/config/db_config.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/indicators/backtest_indicators.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/live/live_tracker.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/alloc_test/signal_generator/signal_sender.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="fdef956d-1420-400f-9f24-c8c4a5fcb8d5" name="Changes" comment="go from mysql to postresql and save weights in reallocation">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/alloc_test/backtest/backtester.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/backtest/backtester.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/alloc_test/backtest/portfolio.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/backtest/portfolio.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/alloc_test/broker/broker_metrics.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/broker/broker_metrics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/alloc_test/config/broker_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/config/broker_config.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/alloc_test/indicators/performance_indicators.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/indicators/live_indicators.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/alloc_test/live/live_database_manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/live/live_database_manager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/alloc_test/live/live_portfolio.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/alloc_test/live/live_portfolio.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/live/live_portfolio.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/alloc_test/live/live_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/live/live_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/alloc_test/main_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/alloc_test/results/alloc_strat_opti_tester_recap.csv" beforeDir="false" afterPath="$PROJECT_DIR$/alloc_test/results/alloc_strat_opti_tester_recap.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,10 +22,11 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="uncomment" />
+        <entry key="$PROJECT_DIR$" value="sql_change" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="SOFT" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
@@ -58,35 +42,31 @@
     "Python.bt_test (1).executor": "Debug",
     "Python.bt_test.executor": "Run",
     "Python.data_utilities.executor": "Debug",
-    "Python.live_tracker (1).executor": "Run",
-    "Python.live_tracker.executor": "Run",
     "Python.main (1).executor": "Run",
     "Python.main.executor": "Run",
     "Python.main_prod.executor": "Run",
-    "Python.main_test.executor": "Debug",
-    "Python.signal_sender.executor": "Debug",
+    "Python.main_test.executor": "Run",
     "Python.single_file.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/Admin/Documents/Pro/projets_code/python/port_rebal/alloc_test/signal_generator/signal_sender.py"
+    "last_opened_file_path": "C:/Users/Admin/Documents/Pro/projets_code/python/various_projects"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\alloc_test\indicators" />
       <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal" />
       <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\utils" />
       <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\strategies" />
       <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\signal_generator" />
+      <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\reporting" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\alloc_test\live" />
       <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\test\config" />
       <recent name="C:\Users\Admin\Documents\Pro\projets_code\python\port_rebal\bt_second" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.signal_sender">
+  <component name="RunManager" selected="Python.main_test">
     <configuration name="data_utilities" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="port_rebal" />
       <option name="ENV_FILES" value="" />
@@ -110,7 +90,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="live_tracker" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+    <configuration name="main_test" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="port_rebal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -124,30 +104,7 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/alloc_test/live/live_tracker.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="signal_sender" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
-      <module name="port_rebal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="SDK_NAME" value="Python 3.12 (trading_platform)" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/alloc_test/signal_generator/signal_sender.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/alloc_test/main_test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -157,13 +114,12 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.live_tracker" />
       <item itemvalue="Python.data_utilities" />
-      <item itemvalue="Python.signal_sender" />
+      <item itemvalue="Python.main_test" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.live_tracker" />
+        <item itemvalue="Python.main_test" />
       </list>
     </recent_temporary>
   </component>
@@ -215,26 +171,32 @@
       <option name="project" value="LOCAL" />
       <updated>1726135584205</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="go from mysql to postresql and save weights in reallocation">
+      <option name="closed" value="true" />
+      <created>1726767947673</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1726767947673</updated>
+    </task>
+    <task id="LOCAL-00006" summary="go from mysql to postresql and save weights in reallocation">
+      <option name="closed" value="true" />
+      <created>1726768012283</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1726768012283</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="first day" />
     <MESSAGE value="create optimization process" />
     <MESSAGE value="restructure script and manage positions traded" />
     <MESSAGE value="uncomment live positions" />
-    <option name="LAST_COMMIT_MESSAGE" value="uncomment live positions" />
+    <MESSAGE value="go from mysql to postresql and save weights in reallocation" />
+    <option name="LAST_COMMIT_MESSAGE" value="go from mysql to postresql and save weights in reallocation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -245,24 +207,9 @@
           <option name="timeStamp" value="14" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/alloc_test/indicators/live_indicators.py</url>
-          <line>57</line>
-          <option name="timeStamp" value="200" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/alloc_test/indicators/live_indicators.py</url>
-          <line>44</line>
-          <option name="timeStamp" value="202" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/alloc_test/live/live_portfolio.py</url>
-          <line>40</line>
-          <option name="timeStamp" value="203" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/alloc_test/backtest/backtester.py</url>
-          <line>26</line>
-          <option name="timeStamp" value="204" />
+          <url>file://$PROJECT_DIR$/alloc_test/utils/data_utilities.py</url>
+          <line>8</line>
+          <option name="timeStamp" value="163" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
