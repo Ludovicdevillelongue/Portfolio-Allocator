@@ -1,4 +1,4 @@
-alloc_test/config/alloc_strat_opti_tester_recap.csv
+alloc_test/results/alloc_strat_opti_tester_recap.csv
 alloc_test/config/broker_config.yml
-alloc_test/config/config/bt_config.yml
-alloc_test/config/config/db_config.yml
+alloc_test/config/bt_config.yml
+alloc_test/config/db_config.yml
