@@ -1,17 +1,14 @@
 import os
-import time
-
 import pandas as pd
-from alloc_test.broker.broker_connect import AlpacaConnect
-from alloc_test.live.live_runner import LiveAllocationRunner
-from alloc_test.reporting.live_report import LiveDashReport
+from broker.broker_connect import AlpacaConnect
+from live.live_runner import LiveAllocationRunner
+from reporting.live_report import LiveDashReport
 
 
 class LiveTracker:
     def __init__(self, broker, data_frequency):
         self.broker=broker
         self.data_frequency=data_frequency
-
     def run(self):
         # path to get config save results of optimization process
         folder_path =os.path.abspath(os.path.dirname(__file__))

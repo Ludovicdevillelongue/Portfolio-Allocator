@@ -33,5 +33,3 @@ class AlpacaConnect(BrokerConnect):
         api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
         return api
 
-
-

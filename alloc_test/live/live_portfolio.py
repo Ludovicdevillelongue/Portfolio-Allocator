@@ -1,10 +1,15 @@
+import json
+import os
 import time
+from datetime import datetime
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from alloc_test.broker.broker_connect import AlpacaConnect
-from alloc_test.broker.broker_metrics import AlpacaPlatformMetrics
-from alloc_test.broker.broker_order import AlpacaTradingBot
-from alloc_test.data_management.data_retriever import AlpacaDataRetriever
-
+from broker.broker_connect import AlpacaConnect
+from broker.broker_metrics import AlpacaPlatformMetrics
+from broker.broker_order import AlpacaTradingBot
+from data_management.data_retriever import AlpacaDataRetriever
+from strategies.rebalancer import Rebalancer
 
 class LivePortfolio:
     def __init__(self, api, broker_config_path, strategy_info, data_frequency, db_manager):
@@ -19,7 +24,7 @@ class LivePortfolio:
         self.price_history = {}
         self.transaction_history = []
         self.cash_history = {}
-        self.strategy_history={}
+        self.strategy_history = {}
 
         # Initialize broker connection and metrics
         self.broker_metrics = AlpacaPlatformMetrics(self.api, self.data_frequency)
@@ -33,18 +38,36 @@ class LivePortfolio:
         """Get the current portfolio value from Alpaca."""
         return self.broker_metrics.get_portfolio_value()
 
-    def rebalance_live_portfolio(self, date, symbols):
+    def rebalance_live_portfolio(self, date, symbols, rebalance_frequency):
         """Rebalance the live portfolio to match the final target weights."""
-
         self.db_manager.save_strategy(self.strategy_info)
         self.db_manager.save_weights(date, self.strategy_info['final_weights'])
+
+        # Initialize Rebalancer
+        last_rebalance_date = datetime.strptime(self.strategy_info['last_rebalance_date'],
+                                                '%Y-%m-%d').date() if 'last_rebalance_date' in self.strategy_info else None
+        rebalancer = Rebalancer(self.strategy_info['strategy_name'], rebalance_frequency, last_rebalance_date)
+
+        if not rebalancer.should_rebalance(date):
+            print(f"Skipping rebalance on {date} due to {rebalance_frequency} frequency.")
+            return
+
+        self.strategy_info['last_rebalance_date'] = str(date)
+        with open(os.path.join(os.path.dirname(__file__), '../signal_generator/strategy_info.json'), 'r+') as f:
+            data = json.load(f)
+            data.update(self.strategy_info)
+            f.seek(0)
+            json.dump(data, f, indent=4)
+            f.truncate()
+        
+        # Perform rebalancing
         asset_prices = self._fetch_current_prices(symbols)
         portfolio_value = self._calculate_portfolio_value()
         try:
-            positions =self.broker_metrics.get_all_positions()
+            positions = self.broker_metrics.get_all_positions()
             positions_symbols = list(positions['symbol'])
         except KeyError:
-            positions_symbols=[]
+            positions_symbols = []
         bt_symbols = list(self.strategy_info['final_weights'].keys())
         for symbol in list(set(positions_symbols + bt_symbols)):
             try:
@@ -65,7 +88,6 @@ class LivePortfolio:
     def _execute_trade(self, symbol, current_qty, order_qty, side):
         """Execute a trade and update transaction history."""
         self.broker_orders.submit_order(symbol, current_qty, order_qty, side)
-
 
     def _record_portfolio_state(self, date):
         """Record the portfolio state after rebalancing."""
@@ -92,6 +114,4 @@ class LivePortfolio:
     def _query_portfolio_state(self):
         (self.position_history, self.price_history, self.weight_history, self.transaction_history, self.cash_history, self.strategy_history)=(
             self.db_manager.query_portfolio_data())
-
-
 
