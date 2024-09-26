@@ -1,38 +1,39 @@
 import json
 import os
 import time
-
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sklearn.ensemble import RandomForestRegressor
-from alloc_test.broker.broker_connect import AlpacaConnect
-from alloc_test.data_management.data_handler import DataHandler
-from alloc_test.indicators.backtest_indicators import BacktestMetrics
-from alloc_test.live.live_runner import LiveAllocationRunner
-from alloc_test.reporting.live_report import LiveDashReport
-from alloc_test.strategies.strat_creator import ERC, MeanVar
+from broker.broker_connect import AlpacaConnect
+from data_management.data_handler import DataHandler
+from indicators.backtest_indicators import BacktestMetrics
+from live.live_runner import LiveAllocationRunner
+from reporting.live_report import LiveDashReport
+from strategies.strat_creator import ERC, MeanVar
 from xgboost import XGBRegressor
-from alloc_test.strategies.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm
-from alloc_test.backtest.benchmark_portfolio import BenchmarkPortfolio
-from alloc_test.backtest.backtester import Backtester
-from alloc_test.data_management.data_retriever import AlpacaDataRetriever
+from strategies.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm
+from backtest.benchmark_portfolio import BenchmarkPortfolio
+from backtest.backtester import Backtester
+from data_management.data_retriever import AlpacaDataRetriever
+from datetime import datetime
 
 
 class PortfolioAllocator:
-    def __init__(self, broker, data_frequency, symbols, start_date, end_date, initial_capital):
-        self.broker=broker
-        self.data_frequency=data_frequency
-        self.symbols=symbols
-        self.start_date=start_date
-        self.end_date=end_date
-        self.initial_capital=initial_capital
-
-
+    def __init__(self, broker, data_frequency, symbols, start_date, end_date, initial_capital, rebalance_frequency):
+        self.broker = broker
+        self.data_frequency = data_frequency
+        self.symbols = symbols
+        self.start_date = start_date
+        self.end_date = end_date
+        self.initial_capital = initial_capital
+        self.rebalance_frequency = rebalance_frequency
 
     def run(self):
         estimation_period = 30
         dash_port = 6000
         iterations = 2
         strategies = {
-            'ERC': ERC()
+            'ERC': ERC(), 'MeanVar' : MeanVar()
         }
         # Define param grids for all strategies
         param_grids = {
@@ -90,31 +91,42 @@ class PortfolioAllocator:
         # Step 3: Set up strategies and run backtests with multiple strategies
         print("Running backtests...")
         backtester = Backtester(data_handler, adjusted_close_prices, asset_returns, benchmark_returns, initial_capital,
-                                strategies, estimation_period, dash_port)
+                                strategies, estimation_period, dash_port, self.rebalance_frequency)
 
         backtester.run_backtest(param_grids=param_grids, iterations=iterations,
                                 optimization_algorithms=optimization_algorithms, strat_opti_bt_csv=strat_opti_bt_csv)
 
         # Get the best strategy
         best_strategy_name, best_sharpe = backtester.get_best_strategy()
-        strategy_info={
-             'strategy_name':best_strategy_name,
-            'strategy_params':backtester.strategies_metrics[best_strategy_name]['best_params'],
-            'opti_algo':backtester.strategies_metrics[best_strategy_name]['best_opti_algo'],
-            'final_weights':(backtester.strategies_metrics[best_strategy_name]['weights'].iloc[-1]).to_dict()
+        strategy_info = {
+            'strategy_name': best_strategy_name,
+            'strategy_params': backtester.strategies_metrics[best_strategy_name]['best_params'],
+            'opti_algo': backtester.strategies_metrics[best_strategy_name]['best_opti_algo'],
+            'final_weights': (backtester.strategies_metrics[best_strategy_name]['weights'].iloc[-1]).to_dict(),
         }
-        with open(os.path.join(folder_path, 'strategy_info.json'), 'w') as json_file:
+        
+        strategy_info_path = os.path.join(folder_path, 'strategy_info.json')
+        
+        if os.path.exists(strategy_info_path):
+            with open(strategy_info_path, 'r') as json_file:
+                existing_strategy_info = json.load(json_file)
+            existing_strategy_info.update(strategy_info)
+            strategy_info = existing_strategy_info
+        
+        with open(strategy_info_path, 'w') as json_file:
             json.dump(strategy_info, json_file, indent=4)
+        
         print(f"Best strategy: {best_strategy_name} with Sharpe ratio: {best_sharpe}")
 
         # Report the backtest results
         backtester.report_backtest()
-
-        # Step 6: Initialize LiveTrading with the selected strategy
+        #
+        # # Step 6: Initialize LiveTrading with the selected strategy
         print("Starting live trading...")
         live_allocation_runner = LiveAllocationRunner(api, broker_config_path, strategy_info,
                                            data_frequency)
-        live_allocation_runner.reallocate(symbols)
+        live_allocation_runner.reallocate(symbols, self.rebalance_frequency)
+        time.sleep(100)
 
 
 if __name__ == "__main__":
@@ -124,5 +136,6 @@ if __name__ == "__main__":
     start_date = '2024-01-01'
     end_date = '2024-09-10'
     initial_capital = 100000
-    pm_runner=PortfolioAllocator(broker, data_frequency, symbols, start_date, end_date, initial_capital)
+    rebalance_frequency='daily'
+    pm_runner=PortfolioAllocator(broker, data_frequency, symbols, start_date, end_date, initial_capital, rebalance_frequency)
     pm_runner.run()

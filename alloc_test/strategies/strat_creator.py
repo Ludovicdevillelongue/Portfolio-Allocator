@@ -1,9 +1,11 @@
 import numpy as np
 from abc import ABC, abstractmethod
 import gym
+import pandas as pd
 from scipy.optimize import minimize
 from scipy.cluster.hierarchy import linkage, fcluster
-from scipy.spatial.distance import squareform
+from scipy.spatial.distance import pdist, squareform
+
 from sklearn.ensemble import RandomForestRegressor
 from stable_baselines3 import PPO, DDPG, TD3
 from gym import spaces
@@ -116,6 +118,130 @@ class HierarchicalRiskParity(AllocationStrategy):
         except Exception as e:
             weights = np.zeros(len(symbols))
         return dict(zip(symbols, weights))
+
+
+class AdvancedHierarchicalRiskParity(AllocationStrategy):
+    def __init__(self,
+                    linkage_method='single',
+                    distance_metric='euclidean',
+                    risk_measure='variance',
+                    allocation_method='inverse_variance',
+                    neutralize_beta=False,
+                    bounds=(0, 1)):
+        self.linkage_method = linkage_method
+        self.distance_metric = distance_metric
+        self.risk_measure = risk_measure
+        self.allocation_method = allocation_method
+        self.neutralize_beta = neutralize_beta
+        self.bounds = bounds
+
+    def compute_weights(self, historical_returns):
+        symbols = historical_returns.columns
+        # 1. Compute the covariance and correlation matrices
+        cov = historical_returns.cov()
+        corr = historical_returns.corr()
+
+        # 2. Compute the distance matrix using the selected distance metric
+        if self.distance_metric == 'euclidean':
+            dist = np.sqrt((1 - corr) / 2)
+        else:
+            dist = pd.DataFrame(
+                squareform(pdist(corr, metric=self.distance_metric)),
+                index=corr.index,
+                columns=corr.index
+            )
+
+        dist_condensed = squareform(dist.values)
+
+        # 3. Perform hierarchical clustering using the selected linkage method
+        linkage_matrix = linkage(dist_condensed, method=self.linkage_method)
+
+        # 4. Get the order of assets from clustering
+        sorted_indices = self._get_quasi_diag(linkage_matrix)
+        sorted_symbols = historical_returns.columns[sorted_indices]
+
+        # 5. Arrange covariance matrix accordingly
+        ordered_cov = cov.loc[sorted_symbols, sorted_symbols]
+
+        # 6. Compute hierarchical risk parity weights
+        weights = self._get_recursive_bisection(ordered_cov)
+
+        # 7. Reindex weights to original asset order and apply bounds
+        hrp_weights = weights.reindex(historical_returns.columns).fillna(0)
+        hrp_weights = hrp_weights.clip(self.bounds[0], self.bounds[1])
+
+        # 8. Normalize weights to sum to 1
+        hrp_weights /= hrp_weights.sum()
+
+        # 9. Neutralize market beta if required
+        if self.neutralize_beta:
+            betas = historical_returns.apply(
+                lambda x: x.cov(historical_returns.mean()) / historical_returns.mean().var())
+            portfolio_beta = np.dot(hrp_weights, betas)
+            hrp_weights -= portfolio_beta * betas / betas.sum()
+            hrp_weights = hrp_weights.clip(self.bounds[0], self.bounds[1])
+            hrp_weights /= hrp_weights.sum()
+
+        return dict(zip(symbols, hrp_weights))
+
+    def _get_quasi_diag(self, linkage_matrix):
+        n = linkage_matrix.shape[0] + 1
+        index = self._quasi_diag(linkage_matrix, n)
+        return index
+
+    def _quasi_diag(self, linkage_matrix, n):
+        # Sorts clusters recursively to build the ordered list of assets
+        def recursive_sort(cluster_id):
+            if cluster_id < n:
+                return [cluster_id]
+            else:
+                left = int(linkage_matrix[cluster_id - n, 0])
+                right = int(linkage_matrix[cluster_id - n, 1])
+                return recursive_sort(left) + recursive_sort(right)
+
+        return recursive_sort(2 * n - 2)
+
+    def _get_recursive_bisection(self, cov):
+        weights = pd.Series(1, index=cov.index)
+        clusters = [cov.index.tolist()]
+        while clusters:
+            clusters_next = []
+            for cluster in clusters:
+                if len(cluster) > 1:
+                    # Split the cluster into two
+                    split = int(len(cluster) / 2)
+                    cluster_left = cluster[:split]
+                    cluster_right = cluster[split:]
+
+                    # Compute cluster risks
+                    risk_left = self._get_cluster_risk(cov, cluster_left)
+                    risk_right = self._get_cluster_risk(cov, cluster_right)
+
+                    # Allocate weights based on selected risk measure
+                    alloc_factor = risk_right / (risk_left + risk_right)
+                    weights[cluster_left] *= alloc_factor
+                    weights[cluster_right] *= (1 - alloc_factor)
+
+                    # Add sub-clusters to the list
+                    clusters_next.extend([cluster_left, cluster_right])
+            clusters = clusters_next
+        return weights
+
+    def _get_cluster_risk(self, cov, cluster):
+        cov_slice = cov.loc[cluster, cluster]
+        if self.allocation_method == 'inverse_variance':
+            inv_var = 1 / np.diag(cov_slice)
+            weights = inv_var / inv_var.sum()
+        else:
+            weights = np.ones(len(cov_slice)) / len(cov_slice)
+        portfolio_variance = np.dot(weights.T, np.dot(cov_slice.values, weights))
+        if self.risk_measure == 'variance':
+            return portfolio_variance
+        elif self.risk_measure == 'standard_deviation':
+            return np.sqrt(portfolio_variance)
+        # Implement other risk measures if needed
+        else:
+            raise ValueError(f"Unknown risk measure: {self.risk_measure}")
 
 class MaximumDivergence(AllocationStrategy):
     def compute_weights(self, historical_returns):

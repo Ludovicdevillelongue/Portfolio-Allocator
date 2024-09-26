@@ -2,7 +2,7 @@ from abc import ABC
 import pandas as pd
 import requests
 from alpaca_trade_api.rest import TimeFrame
-from alloc_test.broker.broker_connect import AlpacaConnect, BrokerConnect
+from broker.broker_connect import AlpacaConnect, BrokerConnect
 from datetime import datetime
 import pytz
 
