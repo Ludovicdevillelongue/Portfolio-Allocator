@@ -78,16 +78,16 @@ class MeanVar(AllocationStrategy):
 
         return dict(zip(symbols, result.x))
 
-
-
-
 class MinVol(AllocationStrategy):
+    def __init__(self, regularization_strength=0.0):
+        self.regularization_strength = regularization_strength
+
     def compute_weights(self, historical_returns):
         symbols = historical_returns.columns
         sigma = historical_returns.cov().values
 
         def objective(w):
-            return np.sqrt(np.dot(np.dot(w, sigma), w))
+            return np.sqrt(np.dot(np.dot(w, sigma), w)) + self.regularization_strength * np.sum(w ** 2)
 
         result = minimize(
             objective,
@@ -100,12 +100,16 @@ class MinVol(AllocationStrategy):
         return dict(zip(symbols, result.x))
 
 class HierarchicalRiskParity(AllocationStrategy):
+    def __init__(self, linkage_method='single', distance_metric='euclidean'):
+        self.linkage_method = linkage_method
+        self.distance_metric = distance_metric
+
     def compute_weights(self, historical_returns):
         symbols = historical_returns.columns
         corr_matrix = historical_returns.corr().values
         dist_matrix = np.sqrt((1 - corr_matrix) / 2)
         try:
-            link = linkage(squareform(dist_matrix), 'single')
+            link = linkage(squareform(dist_matrix), self.linkage_method)
             clusters = fcluster(link, 0.5, criterion='distance')
 
             weights = np.zeros(len(symbols))
@@ -244,6 +248,9 @@ class AdvancedHierarchicalRiskParity(AllocationStrategy):
             raise ValueError(f"Unknown risk measure: {self.risk_measure}")
 
 class MaximumDivergence(AllocationStrategy):
+    def __init__(self, regularization_strength=0.0):
+        self.regularization_strength = regularization_strength
+
     def compute_weights(self, historical_returns):
         symbols = historical_returns.columns
         sigma = historical_returns.cov().values
@@ -253,7 +260,7 @@ class MaximumDivergence(AllocationStrategy):
             std_dev_portfolio = np.sqrt(np.dot(np.dot(w, sigma), w))
             weighted_std_dev = np.dot(w, std_dev)
             divergence = weighted_std_dev / std_dev_portfolio
-            return -1. * np.log(divergence.sum())
+            return -1. * np.log(divergence.sum()) + self.regularization_strength * np.sum(w ** 2)
 
         result = minimize(
             objective,
@@ -266,11 +273,12 @@ class MaximumDivergence(AllocationStrategy):
         return dict(zip(symbols, result.x))
 
 class MLModelAllocator(AllocationStrategy):
-    def __init__(self, model=None):
+    def __init__(self, model=None, regularization_strength=0.0):
         if model is None:
             self.model = RandomForestRegressor()
         else:
             self.model = model
+        self.regularization_strength = regularization_strength
 
     def compute_weights(self, historical_returns):
         # Train ML model to predict future returns
@@ -357,9 +365,10 @@ class PortfolioEnv(gym.Env):
 
 # Reinforcement Learning Allocator using PPO or TD3
 class ReinforcementLearningAllocator(AllocationStrategy):
-    def __init__(self, historical_returns, algorithm='PPO', transaction_cost=0.001, risk_aversion=1.0):
+    def __init__(self, historical_returns, algorithm='PPO', transaction_cost=0.001, risk_aversion=1.0, total_timesteps=10000):
         self.env = PortfolioEnv(historical_returns, transaction_cost=transaction_cost, risk_aversion=risk_aversion)
         self.algorithm = algorithm
+        self.total_timesteps = total_timesteps
         self.model = self._select_rl_model()
 
     def _select_rl_model(self):
@@ -374,7 +383,7 @@ class ReinforcementLearningAllocator(AllocationStrategy):
 
     def _train_agent(self, historical_returns):
         # Training the agent with the environment
-        self.model.learn(total_timesteps=10000)  # Adjust timesteps based on the data_management length
+        self.model.learn(total_timesteps=self.total_timesteps)  # Adjust timesteps based on the data length
         return self.model
 
     def compute_weights(self, historical_returns):
@@ -387,13 +396,16 @@ class ReinforcementLearningAllocator(AllocationStrategy):
         return dict(zip(historical_returns.columns, self.env.current_weights))
 
 class CVaROptimization(AllocationStrategy):
+    def __init__(self, confidence_level=0.95):
+        self.confidence_level = confidence_level
+
     def compute_weights(self, historical_returns):
         symbols = historical_returns.columns
         cov_matrix = historical_returns.cov().values
 
         def objective(weights):
             portfolio_returns = np.dot(weights, historical_returns.T)
-            VaR = np.percentile(portfolio_returns, 5)
+            VaR = np.percentile(portfolio_returns, (1 - self.confidence_level) * 100)
             CVaR = np.mean(portfolio_returns[portfolio_returns < VaR])
             return -CVaR  # Minimize Conditional VaR
 

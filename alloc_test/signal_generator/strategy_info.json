@@ -1,12 +1,12 @@
 {
-    "strategy_name": "ERC",
-    "strategy_params": "{'regularization_strength': 0.0734442950875979}",
+    "strategy_name": "MeanVar",
+    "strategy_params": "{'risk_free_rate': 0.020946026512367065, 'target_return': 0.12088859271793385}",
     "opti_algo": "RandomSearchAlgorithm",
     "final_weights": {
-        "AAPL": 0.25073831645222305,
-        "MSFT": 0.250695532553184,
-        "NVDA": 0.24936739474437203,
-        "TSLA": 0.24919875625022098
+        "AAPL": 0.0,
+        "MSFT": 0.0,
+        "NVDA": 1.0,
+        "TSLA": 0.0
     },
-    "last_rebalance_date": "2024-09-26"
+    "last_rebalance_date": "2024-10-01"
 }

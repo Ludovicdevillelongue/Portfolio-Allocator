@@ -7,6 +7,7 @@ import pandas as pd
 from waitress import serve
 import webbrowser
 from dash import dcc, html
+import dash_bootstrap_components as dbc
 from dash import dash_table
 import dash
 import plotly.graph_objs as go
@@ -78,29 +79,36 @@ class ShapReport:
         shap.summary_plot(shap_values, asset_returns)
 
 
+import pandas as pd
+import dash
+from dash import dcc, html
+from dash.dependencies import Input, Output
+import dash_table
+import plotly.graph_objs as go
+import webbrowser
+
 class DashReport:
     def __init__(self, asset_returns, strategies_metrics, port):
-        self.asset_returns=asset_returns
+        self.asset_returns = asset_returns
         self.strategies_metrics = strategies_metrics
-        self.dynamic_metrics=['rolling_sharpe', 'rolling_beta', 'portfolio_values', 'portfolio_cumulative_returns',
-                              'portfolio_pnl', 'portfolio_cum_pnl', 'cash']
-        self.static_metrics = ['best_opti_algo', 'best_params', 'annual_return', 'annual_volatility', 'sharpe_ratio', 'calmar_ratio', 'max_drawdown',
-                               'omega_ratio', 'sortino_ratio','tail_ratio', 'daily_var']
-        self.asset_metrics=['weights', 'asset_prices', 'positions', 'market_values', 'asset_pnl', 'asset_cum_pnl', 'asset_cumulative_returns']
+        self.dynamic_metrics = ['rolling_sharpe', 'rolling_beta', 'portfolio_values', 'portfolio_cumulative_returns',
+                                'portfolio_pnl', 'portfolio_cum_pnl', 'cash']
+        self.static_metrics = ['best_opti_algo', 'best_params', 'annual_return', 'annual_volatility', 'sharpe_ratio',
+                               'calmar_ratio', 'max_drawdown', 'omega_ratio', 'sortino_ratio', 'tail_ratio', 'daily_var']
+        self.asset_metrics = ['weights', 'asset_prices', 'positions', 'market_values', 'asset_pnl', 'asset_cum_pnl', 'asset_cumulative_returns']
         self.app = dash.Dash(__name__)
         self._setup_layout()
         self._setup_callbacks()
         self.port = port
 
     def _prepare_data_for_table(self):
-
         return [{'Strategy': s, **{k: round(v, 2) if isinstance(v, (float, int)) else v
                                    for k, v in m.items() if k in self.static_metrics}}
                 for s, m in self.strategies_metrics.items()]
 
     def _generate_correlation_heatmap(self):
         # Generate the correlation matrix and create a static heatmap
-        correlation_matrix =self.asset_returns.corr()
+        correlation_matrix = self.asset_returns.corr()
         heatmap = {
             'data': [
                 go.Heatmap(
@@ -132,22 +140,57 @@ class DashReport:
                 style_cell={'textAlign': 'center'}),
 
             html.H1('Strategies Rolling Performance Metrics'),
-            *[dcc.Graph(id=f'graph-{metric}', figure={'data': [go.Scatter(x=metrics.index, y=metrics, mode='lines', name=strategy)
-                for strategy, data in self.strategies_metrics.items() for metrics in [data[metric]]], 'layout':
-                go.Layout(title=f'{metric.capitalize()} Comparison Across Strategies', xaxis={'title': 'Date'}, yaxis={'title': metric.replace("_", " ").title()})})
-              for metric in self.dynamic_metrics],
+
+            *[dcc.Graph(id=f'graph-{metric}', figure=self._generate_dynamic_metric_figure(metric)) for metric in self.dynamic_metrics],
 
             html.H1('Asset-Level Metrics Per Strategy'),
             dcc.Dropdown(id='strategy-dropdown', options=[{'label': s, 'value': s} for s in self.strategies_metrics.keys()],
                          value=list(self.strategies_metrics.keys())[0], clearable=False, style={'width': '50%'}),
-            *[dcc.Graph(id=f'asset-{metric}-graph') for metric in
-              self.asset_metrics],
-            # Add asset correlation heatmap graph
+            *[dcc.Graph(id=f'asset-{metric}-graph') for metric in self.asset_metrics],
+
             html.H1('Asset Correlation Heatmap'),
-            dcc.Graph(id='correlation-heatmap', figure=self._generate_correlation_heatmap())  # Use the static heatmap figure
+            dcc.Graph(id='correlation-heatmap', figure=self._generate_correlation_heatmap())
         ])
 
+    def _generate_dynamic_metric_figure(self, metric):
+        """ Generate a graph for a specific dynamic metric using rangeselector and rangeslider """
+        fig = go.Figure()
+
+        # Adding metrics as lines for each strategy
+        for strategy, data in self.strategies_metrics.items():
+            indicator = data[metric]
+            line = go.Scatter(
+                x=indicator.index, y=indicator,
+                mode='lines',
+                name=strategy
+            )
+            fig.add_trace(line)
+
+        # Add zoom buttons using rangeselector and rangeslider
+        fig.update_layout(
+            xaxis_title="Dates",
+            yaxis_title=metric.replace("_", " ").title(),
+            title=f"{metric.capitalize()} Comparison Across Strategies",
+            xaxis=dict(
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=7, label="1W", step="day", stepmode="backward"),  # Use day step for week
+                        dict(count=1, label="1M", step="month", stepmode="backward"),
+                        dict(count=3, label="3M", step="month", stepmode="backward"),
+                        dict(count=6, label="6M", step="month", stepmode="backward"),
+                        dict(count=1, label="YTD", step="year", stepmode="todate"),
+                        dict(count=1, label="1Y", step="year", stepmode="backward"),
+                        dict(step="all")
+                    ])
+                ),
+                rangeslider=dict(visible=True)
+            )
+        )
+
+        return fig
+
     def _setup_callbacks(self):
+        # Asset-level metrics callback based on selected strategy
         @self.app.callback(
             [Output(f'asset-{metric}-graph', 'figure') for metric in self.asset_metrics],
             [Input('strategy-dropdown', 'value')]
@@ -161,18 +204,35 @@ class DashReport:
                     ],
                     'layout': go.Layout(
                         title=f'{metric_name.capitalize()} for {selected_strategy}',
-                        xaxis={'title': 'Date'},
+                        xaxis={
+                            'title': 'Date',
+                            'rangeselector': dict(
+                                buttons=list([
+                                    dict(count=7, label="1W", step="day", stepmode="backward"),
+                                    dict(count=1, label="1M", step="month", stepmode="backward"),
+                                    dict(count=3, label="3M", step="month", stepmode="backward"),
+                                    dict(count=6, label="6M", step="month", stepmode="backward"),
+                                    dict(count=1, label="YTD", step="year", stepmode="todate"),
+                                    dict(count=1, label="1Y", step="year", stepmode="backward"),
+                                    dict(step="all")
+                                ])
+                            ),
+                            'rangeslider': {'visible': True}
+                        },
                         yaxis={'title': metric_name.replace("_", " ").title()}
                     )
                 }
                 for metric_name, metric in self.strategies_metrics[selected_strategy].items()
                 if metric_name in self.asset_metrics
             ]
-
             return figures
+
     def run_server(self):
+        """ Launch the Dash server """
         webbrowser.open(f"http://127.0.0.1:{self.port}")
-        serve(self.app.server, host='0.0.0.0', port=self.port)
+        self.app.run_server(debug=False, port=self.port)
+
+
 
 class ExcelReport:
 
