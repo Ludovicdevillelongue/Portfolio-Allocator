@@ -7,6 +7,7 @@ import random
 import warnings
 import pyfolio as pf
 from abc import ABC, abstractmethod
+from strategies.factor_models import FactorModel
 
 class OptimizationAlgorithm(ABC):
     @abstractmethod
@@ -15,11 +16,13 @@ class OptimizationAlgorithm(ABC):
 
     def find_best_params(self, optimizer, evaluate):
         best_params = None
+        # best_combined_score = float('-inf')
         best_sharpe_ratio = float('-inf')
 
         # Evaluate each parameter set
         for params in evaluate(optimizer):
             sharpe_ratio = optimizer.test_strategy(params)
+            # sharpe_ratio, combined_score = optimizer.test_strategy(params)
 
             # Extract the optimization algorithm's class name and format it
             algo_name = self.__class__.__name__.replace('Algorithm', '')
@@ -30,6 +33,7 @@ class OptimizationAlgorithm(ABC):
                 'opti_algo': algo_name,  # Properly formatted algorithm name (e.g., randomsearch, gridsearch, etc.)
                 'params': params,
                 'sharpe_ratio': sharpe_ratio
+                # 'combined_score': combined_score
             }
 
             # Save the recap to the CSV
@@ -39,12 +43,15 @@ class OptimizationAlgorithm(ABC):
             else:
                 strat_test_recap.to_csv(optimizer.strat_opti_bt_csv, mode='a', header=False, index=False)
 
-            # Store the best Sharpe ratio and parameters
+            # Store the best combined score and parameters
+            # if combined_score > best_combined_score:
+            #     best_combined_score = combined_score
             if sharpe_ratio > best_sharpe_ratio:
                 best_sharpe_ratio = sharpe_ratio
                 best_params = params
 
         return best_params, best_sharpe_ratio
+        # return best_params, best_sharpe_ratio, best_combined_score
 
 
 class RandomSearchAlgorithm(OptimizationAlgorithm):
@@ -171,8 +178,10 @@ class StrategyOptimizer:
         self.strategy_runner = strategy_runner
         self.strat_opti_bt_csv = strat_opti_bt_csv
         self.global_best_sharpe = float('-inf')
+        self.global_best_score = float('-inf')
         self.global_best_params = None
         self.global_best_opti_algo = None
+
 
     def generate_random_params(self):
         """Generate a random set of parameters from the parameter grid."""
@@ -188,26 +197,47 @@ class StrategyOptimizer:
                 params[key] = random.choice(param_range)
         return params
 
+
+
+
+
     def test_strategy(self, strategy_params):
-        """Test the strategy using the provided parameters."""
-        # Set the parameters on the existing strategy instance
+        """Test the strategy using the provided parameters and factor analysis."""
         for param_name, param_value in strategy_params.items():
             setattr(self.strategy_instance, param_name, param_value)
-
-        # Run the strategy and calculate the Sharpe ratio
         portfolio_metrics = self.strategy_runner.run_allocation(self.strategy_instance)
-        sharpe_ratio =portfolio_metrics['sharpe_ratio']
+        # strategy_returns = portfolio_metrics['returns']
+        sharpe_ratio = portfolio_metrics['sharpe_ratio']
+        # factor_returns = FactorModel(self.factors).calculate_factor_returns(strategy_returns)
+        # factor_score = self.calculate_factor_score(factor_returns)
+        # combined_score = self.calculate_combined_score(sharpe_ratio, factor_score)
         return sharpe_ratio
 
+    # def calculate_factor_score(self, factor_returns):
+    #     score = 0
+    #     for symbol, data in factor_returns.items():
+    #         score += data['alpha']
+    #         score += data['factor_loadings'].get('Momentum', 0)
+    #         score -= abs(data['factor_loadings'].get('Market', 0) - 1)
+    #     return score
+    #
+    # def calculate_combined_score(self, sharpe_ratio, factor_score):
+    #     # You can adjust these weights based on your preference
+    #     sharpe_weight = 0.7
+    #     factor_weight = 0.3
+    #     return sharpe_weight * sharpe_ratio + factor_weight * factor_score
+
     def _optimize_strategy(self, optimization_algorithm):
+        # best_params, best_sharpe, best_score = optimization_algorithm.optimize(self)
+        # if best_score > self.global_best_score:
         best_params, best_sharpe = optimization_algorithm.optimize(self)
         if best_sharpe > self.global_best_sharpe:
             self.global_best_sharpe = best_sharpe
+            # self.global_best_score = best_score
             self.global_best_params = best_params
             self.global_best_opti_algo = optimization_algorithm.__class__.__name__
 
     def test_all_search_types(self):
-        best_results = {}
         for search_type in self.optimization_algorithms:
             self._optimize_strategy(search_type)
         return self.global_best_opti_algo, self.global_best_params

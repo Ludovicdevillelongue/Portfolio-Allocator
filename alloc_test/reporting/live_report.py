@@ -68,7 +68,25 @@ class LiveDashReport:
                 'data': [go.Scatter(x=self.portfolio_metrics[metric].index, y=self.portfolio_metrics[metric], mode='lines', name=metric)],
                 'layout': go.Layout(
                     title=f'{metric.capitalize()}',
-                    xaxis={'title': 'Date'},
+                        xaxis={
+                            'title': 'Date',
+                            'rangeselector': dict(
+                                buttons=list([
+                                    dict(count=1, label="1h", step="hour", stepmode="backward"),
+                                    dict(count=6, label="6h", step="hour", stepmode="backward"),
+                                    dict(count=12, label="12h", step="hour", stepmode="backward"),
+                                    dict(count=1, label="1D", step="day", stepmode="backward"),
+                                    dict(count=7, label="1W", step="day", stepmode="backward"),
+                                    dict(count=1, label="1M", step="month", stepmode="backward"),
+                                    dict(count=3, label="3M", step="month", stepmode="backward"),
+                                    dict(count=6, label="6M", step="month", stepmode="backward"),
+                                    dict(count=1, label="YTD", step="year", stepmode="todate"),
+                                    dict(count=1, label="1Y", step="year", stepmode="backward"),
+                                    dict(step="all")
+                                ])
+                            ),
+                            'rangeslider': {'visible': True}
+                        },
                     yaxis={'title': metric.replace("_", " ").title()}
                 )
             }) for metric in self.dynamic_metrics],
@@ -108,7 +126,25 @@ class LiveDashReport:
                     'data': [go.Scatter(x=self.portfolio_metrics[metric].index, y=self.portfolio_metrics[metric], mode='lines', name=metric)],
                     'layout': go.Layout(
                         title=f'{metric.capitalize()}',
-                        xaxis={'title': 'Date'},
+                        xaxis={
+                            'title': 'Date',
+                            'rangeselector': dict(
+                                buttons=list([
+                                    dict(count=1, label="1h", step="hour", stepmode="backward"),
+                                    dict(count=6, label="6h", step="hour", stepmode="backward"),
+                                    dict(count=12, label="12h", step="hour", stepmode="backward"),
+                                    dict(count=1, label="1D", step="day", stepmode="backward"),
+                                    dict(count=7, label="1W", step="day", stepmode="backward"),
+                                    dict(count=1, label="1M", step="month", stepmode="backward"),
+                                    dict(count=3, label="3M", step="month", stepmode="backward"),
+                                    dict(count=6, label="6M", step="month", stepmode="backward"),
+                                    dict(count=1, label="YTD", step="year", stepmode="todate"),
+                                    dict(count=1, label="1Y", step="year", stepmode="backward"),
+                                    dict(step="all")
+                                ])
+                            ),
+                            'rangeslider': {'visible': True}
+                        },
                         yaxis={'title': metric.replace("_", " ").title()}
                     )
                 }
@@ -124,7 +160,25 @@ class LiveDashReport:
                     ],
                     'layout': go.Layout(
                         title=f'{metric_name.capitalize()}',
-                        xaxis={'title': 'Date'},
+                        xaxis={
+                            'title': 'Date',
+                            'rangeselector': dict(
+                                buttons=list([
+                                    dict(count=1, label="1h", step="hour", stepmode="backward"),
+                                    dict(count=6, label="6h", step="hour", stepmode="backward"),
+                                    dict(count=12, label="12h", step="hour", stepmode="backward"),
+                                    dict(count=1, label="1D", step="day", stepmode="backward"),
+                                    dict(count=7, label="1W", step="day", stepmode="backward"),
+                                    dict(count=1, label="1M", step="month", stepmode="backward"),
+                                    dict(count=3, label="3M", step="month", stepmode="backward"),
+                                    dict(count=6, label="6M", step="month", stepmode="backward"),
+                                    dict(count=1, label="YTD", step="year", stepmode="todate"),
+                                    dict(count=1, label="1Y", step="year", stepmode="backward"),
+                                    dict(step="all")
+                                ])
+                            ),
+                            'rangeslider': {'visible': True}
+                        },
                         yaxis={'title': metric_name.replace("_", " ").title()}
                     )
                 }

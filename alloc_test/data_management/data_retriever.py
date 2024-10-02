@@ -1,7 +1,10 @@
+import os
 from abc import ABC
 import pandas as pd
 import requests
 from alpaca_trade_api.rest import TimeFrame
+from sklearn.linear_model import LinearRegression
+import pandas_datareader.data as web
 from broker.broker_connect import AlpacaConnect, BrokerConnect
 from datetime import datetime
 import pytz
@@ -20,6 +23,7 @@ class DataRetriever(ABC):
 
     def get_stock_splits(self, symbols, start_date, end_date, broker_config_path):
         pass
+    
 class AlpacaDataRetriever(DataRetriever):
     def __init__(self, api):
         super().__init__(api)
@@ -43,6 +47,7 @@ class AlpacaDataRetriever(DataRetriever):
 
     def get_tradable_symbols(self, asset_class):
         return [a.symbol for a in self.api.list_assets(status='active', asset_class=asset_class)]
+
 
 
     def get_stock_splits(self, symbols, start_date, end_date, broker_config_path):
@@ -71,3 +76,48 @@ class AlpacaDataRetriever(DataRetriever):
                     stock_split.loc[ex_date, symbol] = True
                     stock_split_ratios.loc[ex_date, symbol] = split_ratio
         return stock_split, stock_split_ratios
+
+class FactorDataProvider:
+    def __init__(self, start_date, end_date, csv_path='data_management/factors_data.csv'):
+        self.start_date = start_date
+        self.end_date = end_date
+        self.csv_path = csv_path
+
+    def fetch_ff_factors(self, start_date, end_date):
+        # Download the Fama/French factors from Kenneth French's data library
+        ff_factors = web.DataReader('F-F_Research_Data_Factors_daily', 'famafrench', start_date, end_date)[0]
+        ff_factors = ff_factors / 100
+        return ff_factors
+
+    def fetch_mom_factors(self, start_date, end_date):
+        # Download the Fama/French momentum factor from Kenneth French's data library
+        mom_factor = web.DataReader('F-F_Momentum_Factor_daily', 'famafrench', start_date, end_date)[0]
+        mom_factor = mom_factor / 100
+        return mom_factor
+
+    def get_all_factors(self):
+        if os.path.exists(self.csv_path):
+            all_factors = pd.read_csv(self.csv_path, index_col=0, parse_dates=True)
+            last_date = all_factors.index.max()
+            if last_date >= pd.to_datetime(self.end_date):
+                return all_factors.loc[:self.end_date]
+            else:
+                start_date = last_date + pd.Timedelta(days=1)
+        else:
+            all_factors = pd.DataFrame()
+            start_date = self.start_date
+
+        # Fetch new factors from the start_date to end_date
+        ff_factors = self.fetch_ff_factors(start_date, self.end_date)
+        mom_factors = self.fetch_mom_factors(start_date, self.end_date)
+
+        new_factors = pd.concat([ff_factors, mom_factors], axis=1)
+        all_factors = pd.concat([all_factors, new_factors])
+
+        # Save the combined factors to a CSV file
+        all_factors.to_csv(self.csv_path)
+
+        return all_factors
+
+
+
