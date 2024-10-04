@@ -52,7 +52,7 @@ class StrategyRunner:
 
 class Backtester:
     def __init__(self, data_handler, close_prices, asset_returns, benchmark_returns, initial_capital, strategies,
-                 estimation_period, dash_port, rebalance_frequency):
+                 estimation_period, bt_port, rebalance_frequency):
         self.data_handler = data_handler
         self.close_prices=close_prices
         self.asset_returns = asset_returns
@@ -60,7 +60,7 @@ class Backtester:
         self.initial_capital = initial_capital
         self.strategies = strategies
         self.estimation_period = estimation_period
-        self.dash_port=dash_port
+        self.bt_port=bt_port
         self.rebalance_frequency = rebalance_frequency
         self.strategy_runner=StrategyRunner(self.data_handler, self.close_prices, self.asset_returns, self.benchmark_returns,
                                self.initial_capital, self.estimation_period, self.rebalance_frequency)
@@ -96,6 +96,8 @@ class Backtester:
                 self.strategies_metrics[strategy_name]=self.strategy_runner.run_allocation(strategy_instance)
                 self.strategies_metrics[strategy_name]['best_params']=str(best_params)
                 self.strategies_metrics[strategy_name]['best_opti_algo']=best_opti_algo
+                self.strategies_metrics[strategy_name]['last_rebalance_date']=(
+                    str(self.strategy_runner.rebalancer.last_rebalance_date))
 
     def report_backtest(self):
         pass
@@ -103,7 +105,7 @@ class Backtester:
         #     PyfolioReport('../pyfolio_results')._generate_pyfolio_report(strat_name, results['portfolio_returns'],
         #                                                                  results['positions'], results['transactions'])
         # PyfolioReport('../pyfolio_results')._generate_heatmap(self.asset_returns)
-        backtest_port = self.dash_port + 1000
+        backtest_port = self.bt_port + 1000
         dashboard_run_server = threading.Thread(
             target=lambda: DashReport(self.asset_returns, self.strategies_metrics, backtest_port).run_server())
         dashboard_run_server.daemon = True  # Ensures the thread is killed when the main program exits

@@ -1,21 +1,15 @@
 import os
-from dash.dependencies import Input, Output
 import seaborn as sns
 import shap
 import numpy as np
-import pandas as pd
-from waitress import serve
-import webbrowser
-from dash import dcc, html
-import dash_bootstrap_components as dbc
 from dash import dash_table
-import dash
-import plotly.graph_objs as go
 import pyfolio as pf
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Font
+from waitress import serve
+
 
 class PyfolioReport:
     def __init__(self,output_dir):
@@ -93,8 +87,8 @@ class DashReport:
         self.strategies_metrics = strategies_metrics
         self.dynamic_metrics = ['rolling_sharpe', 'rolling_beta', 'portfolio_values', 'portfolio_cumulative_returns',
                                 'portfolio_pnl', 'portfolio_cum_pnl', 'cash']
-        self.static_metrics = ['best_opti_algo', 'best_params', 'annual_return', 'annual_volatility', 'sharpe_ratio',
-                               'calmar_ratio', 'max_drawdown', 'omega_ratio', 'sortino_ratio', 'tail_ratio', 'daily_var']
+        self.static_metrics = ['best_opti_algo', 'best_params', 'last_rebalance_date', 'annual_return', 'annual_volatility',
+                               'sharpe_ratio', 'calmar_ratio', 'max_drawdown', 'omega_ratio', 'sortino_ratio', 'tail_ratio', 'daily_var']
         self.asset_metrics = ['weights', 'asset_prices', 'positions', 'market_values', 'asset_pnl', 'asset_cum_pnl', 'asset_cumulative_returns']
         self.app = dash.Dash(__name__)
         self._setup_layout()
@@ -228,10 +222,8 @@ class DashReport:
             return figures
 
     def run_server(self):
-        """ Launch the Dash server """
         webbrowser.open(f"http://127.0.0.1:{self.port}")
-        self.app.run_server(debug=False, port=self.port)
-
+        serve(self.app.server, host='0.0.0.0', port=self.port)
 
 
 class ExcelReport:

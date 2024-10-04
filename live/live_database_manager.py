@@ -52,7 +52,8 @@ class PortfolioDatabaseManager:
         cursor.execute('''CREATE TABLE IF NOT EXISTS portfolio_strategy (
                             strategy_name VARCHAR(50),
                             strategy_params TEXT,
-                            opti_algo TEXT)''')
+                            opti_algo TEXT,
+                            last_rebalance_date VARCHAR(50))''')
 
         self.conn.commit()
 
@@ -93,9 +94,9 @@ class PortfolioDatabaseManager:
     def save_strategy(self, strategy_info):
         """Save strategy information."""
         cursor = self.conn.cursor()
-        cursor.execute('''INSERT INTO portfolio_strategy (strategy_name, strategy_params, opti_algo)
-                          VALUES (%s, %s, %s)''', (strategy_info['strategy_name'], strategy_info['strategy_params']
-                                                                       , strategy_info['opti_algo']))
+        cursor.execute('''INSERT INTO portfolio_strategy (strategy_name, strategy_params, opti_algo, last_rebalance_date)
+                          VALUES (%s, %s, %s, %s)''', (strategy_info['strategy_name'], strategy_info['strategy_params']
+                                                                       , strategy_info['opti_algo'], str(strategy_info['last_rebalance_date'])))
         self.conn.commit()
 
     def query_portfolio_data(self):
