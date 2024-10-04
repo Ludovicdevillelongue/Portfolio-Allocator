@@ -36,6 +36,7 @@ class LiveDashReport:
         selected_strategy=strategy_history.iloc[-1]['strategy_name']
         best_opti_algo = strategy_history.iloc[-1]['best_opti_algo']
         best_params = strategy_history.iloc[-1]['best_params']
+        last_rebalance_date = strategy_history.iloc[-1]['last_rebalance_date']
 
         # Prepare the data for the static table from portfolio metrics
         metrics_data = {
@@ -47,6 +48,7 @@ class LiveDashReport:
         metrics_data['actual_strategy'] = selected_strategy
         metrics_data['best_opti_algo'] = best_opti_algo
         metrics_data['best_params'] = best_params
+        metrics_data['last_rebalance_date'] = last_rebalance_date
 
         return [metrics_data]
 

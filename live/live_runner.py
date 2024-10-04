@@ -52,5 +52,5 @@ class LiveAllocationRunner:
             close_prices = self.convert_portfolio_results(self.live_portfolio)
             portfolio_metrics = LiveMetrics(close_prices).compute_strategy_metrics(self.live_portfolio, self.benchmark_returns)
             portfolio_metrics['strategy_history'] = pd.DataFrame(self.live_portfolio.strategy_history,
-                                                               columns=['strategy_name', 'best_params', 'best_opti_algo'])
+                                                               columns=['strategy_name', 'best_params', 'best_opti_algo', 'last_rebalance_date'])
             return portfolio_metrics

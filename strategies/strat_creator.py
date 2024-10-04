@@ -15,6 +15,92 @@ class AllocationStrategy(ABC):
     def compute_weights(self, historical_returns):
         pass
 
+class OneOverN(AllocationStrategy):
+    def compute_weights(self, historical_returns):
+        num_assets = len(historical_returns.columns)
+        return {symbol: 1.0 / num_assets for symbol in historical_returns.columns}
+
+class MinVol(AllocationStrategy):
+    def __init__(self, regularization_strength=0.0):
+        self.regularization_strength = regularization_strength
+
+    def compute_weights(self, historical_returns):
+        symbols = historical_returns.columns
+        sigma = historical_returns.cov().values
+
+        def objective(w):
+            return np.sqrt(np.dot(np.dot(w, sigma), w)) + self.regularization_strength * np.sum(w ** 2)
+
+        result = minimize(
+            objective,
+            np.ones(len(symbols)) / len(symbols),
+            method='SLSQP',
+            bounds=[(0, 1)] * len(symbols),
+            constraints=({'type': 'eq', 'fun': lambda x: x.sum() - 1.0}),
+            options={'disp': False, 'ftol': 1e-10})
+
+        return dict(zip(symbols, result.x))
+
+class MaximumDivergence(AllocationStrategy):
+    def __init__(self, regularization_strength=0.0):
+        self.regularization_strength = regularization_strength
+
+    def compute_weights(self, historical_returns):
+        symbols = historical_returns.columns
+        sigma = historical_returns.cov().values
+        std_dev = np.sqrt(np.diag(sigma))
+
+        def objective(w):
+            std_dev_portfolio = np.sqrt(np.dot(np.dot(w, sigma), w))
+            weighted_std_dev = np.dot(w, std_dev)
+            divergence = weighted_std_dev / std_dev_portfolio
+            return -1. * np.log(divergence.sum()) + self.regularization_strength * np.sum(w ** 2)
+
+        result = minimize(
+            objective,
+            np.ones(len(symbols)) / len(symbols),
+            method='SLSQP',
+            bounds=[(0, 1)] * len(symbols),
+            constraints=({'type': 'eq', 'fun': lambda x: x.sum() - 1.0}),
+            options={'disp': False, 'ftol': 1e-10})
+
+        return dict(zip(symbols, result.x))
+
+
+class MeanVar(AllocationStrategy):
+    def __init__(self, risk_free_rate=0.0, target_return=None):
+        self.risk_free_rate = risk_free_rate
+        self.target_return = target_return
+
+    def compute_weights(self, historical_returns):
+        symbols = historical_returns.columns
+        mean_returns = historical_returns.mean().values
+        cov_matrix = historical_returns.cov().values
+
+        def objective(weights):
+            portfolio_return = np.dot(weights, mean_returns)
+            portfolio_variance = np.dot(weights.T, np.dot(cov_matrix, weights))
+            sharpe_ratio = ((portfolio_return - self.risk_free_rate) / np.sqrt(portfolio_variance)) * np.sqrt(252)
+
+            return -sharpe_ratio  # Negative because we want to maximize it
+
+        num_assets = len(symbols)
+
+        constraints = [{'type': 'eq', 'fun': lambda x: np.sum(x) - 1}]  # Weights must sum to 1
+
+        if self.target_return is not None:
+            constraints.append({'type': 'eq', 'fun': lambda x: np.dot(x, mean_returns) - self.target_return})
+
+        result = minimize(
+            objective,
+            np.ones(len(symbols)) / len(symbols),
+            method='SLSQP',
+            bounds=[(0, 1)] * len(symbols),
+            constraints=constraints,
+            options={'disp': False, 'ftol': 1e-10})
+
+        return dict(zip(symbols, result.x))
+
 class ERC(AllocationStrategy):
     def __init__(self, regularization_strength=0.0):
         self.regularization_strength = regularization_strength
@@ -39,64 +125,26 @@ class ERC(AllocationStrategy):
 
         return dict(zip(symbols, result.x))
 
-
-# Implementations of different allocation strategies
-class OneOverN(AllocationStrategy):
-    def compute_weights(self, historical_returns):
-        num_assets = len(historical_returns.columns)
-        return {symbol: 1.0 / num_assets for symbol in historical_returns.columns}
-
-class MeanVar(AllocationStrategy):
-    def __init__(self, risk_free_rate=0.0, target_return=None):
-        self.risk_free_rate = risk_free_rate
-        self.target_return = target_return
+class CVaROptimization(AllocationStrategy):
+    def __init__(self, confidence_level=0.95):
+        self.confidence_level = confidence_level
 
     def compute_weights(self, historical_returns):
         symbols = historical_returns.columns
-        mean_returns = historical_returns.mean().values
         cov_matrix = historical_returns.cov().values
+
         def objective(weights):
-            portfolio_return = np.dot(weights, mean_returns)
-            portfolio_variance = np.dot(weights.T, np.dot(cov_matrix, weights))
-            sharpe_ratio = ((portfolio_return - self.risk_free_rate) / np.sqrt(portfolio_variance)) * np.sqrt(252)
-            return -sharpe_ratio  # Negative because we want to maximize it
+            portfolio_returns = np.dot(weights, historical_returns.T)
+            VaR = np.percentile(portfolio_returns, (1 - self.confidence_level) * 100)
+            CVaR = np.mean(portfolio_returns[portfolio_returns < VaR])
+            return -CVaR  # Minimize Conditional VaR
 
         num_assets = len(symbols)
+        constraints = ({'type': 'eq', 'fun': lambda x: np.sum(x) - 1})
+        bounds = tuple((0, 1) for _ in range(num_assets))
+        initial_weights = num_assets * [1. / num_assets]
 
-        constraints = [{'type': 'eq', 'fun': lambda x: np.sum(x) - 1}]  # Weights must sum to 1
-
-        if self.target_return is not None:
-            constraints.append({'type': 'eq', 'fun': lambda x: np.dot(x, mean_returns) - self.target_return})
-
-        result = minimize(
-            objective,
-            np.ones(len(symbols)) / len(symbols),
-            method='SLSQP',
-            bounds=[(0, 1)] * len(symbols),
-            constraints=constraints,
-            options={'disp': False, 'ftol': 1e-10})
-
-        return dict(zip(symbols, result.x))
-
-class MinVol(AllocationStrategy):
-    def __init__(self, regularization_strength=0.0):
-        self.regularization_strength = regularization_strength
-
-    def compute_weights(self, historical_returns):
-        symbols = historical_returns.columns
-        sigma = historical_returns.cov().values
-
-        def objective(w):
-            return np.sqrt(np.dot(np.dot(w, sigma), w)) + self.regularization_strength * np.sum(w ** 2)
-
-        result = minimize(
-            objective,
-            np.ones(len(symbols)) / len(symbols),
-            method='SLSQP',
-            bounds=[(0, 1)] * len(symbols),
-            constraints=({'type': 'eq', 'fun': lambda x: x.sum() - 1.0}),
-            options={'disp': False, 'ftol': 1e-10})
-
+        result = minimize(objective, initial_weights, method='SLSQP', bounds=bounds, constraints=constraints)
         return dict(zip(symbols, result.x))
 
 class HierarchicalRiskParity(AllocationStrategy):
@@ -122,7 +170,6 @@ class HierarchicalRiskParity(AllocationStrategy):
         except Exception as e:
             weights = np.zeros(len(symbols))
         return dict(zip(symbols, weights))
-
 
 class AdvancedHierarchicalRiskParity(AllocationStrategy):
     def __init__(self,
@@ -247,31 +294,6 @@ class AdvancedHierarchicalRiskParity(AllocationStrategy):
         else:
             raise ValueError(f"Unknown risk measure: {self.risk_measure}")
 
-class MaximumDivergence(AllocationStrategy):
-    def __init__(self, regularization_strength=0.0):
-        self.regularization_strength = regularization_strength
-
-    def compute_weights(self, historical_returns):
-        symbols = historical_returns.columns
-        sigma = historical_returns.cov().values
-        std_dev = np.sqrt(np.diag(sigma))
-
-        def objective(w):
-            std_dev_portfolio = np.sqrt(np.dot(np.dot(w, sigma), w))
-            weighted_std_dev = np.dot(w, std_dev)
-            divergence = weighted_std_dev / std_dev_portfolio
-            return -1. * np.log(divergence.sum()) + self.regularization_strength * np.sum(w ** 2)
-
-        result = minimize(
-            objective,
-            np.ones(len(symbols)) / len(symbols),
-            method='SLSQP',
-            bounds=[(0, 1)] * len(symbols),
-            constraints=({'type': 'eq', 'fun': lambda x: x.sum() - 1.0}),
-            options={'disp': False, 'ftol': 1e-10})
-
-        return dict(zip(symbols, result.x))
-
 class MLModelAllocator(AllocationStrategy):
     def __init__(self, model=None, regularization_strength=0.0):
         if model is None:
@@ -363,7 +385,6 @@ class PortfolioEnv(gym.Env):
         print(
             f"Step {self.current_step}: Portfolio Value = {self.portfolio_value}, Weights = {self.current_weights}")
 
-# Reinforcement Learning Allocator using PPO or TD3
 class ReinforcementLearningAllocator(AllocationStrategy):
     def __init__(self, historical_returns, algorithm='PPO', transaction_cost=0.001, risk_aversion=1.0, total_timesteps=10000):
         self.env = PortfolioEnv(historical_returns, transaction_cost=transaction_cost, risk_aversion=risk_aversion)
@@ -395,39 +416,12 @@ class ReinforcementLearningAllocator(AllocationStrategy):
             obs, rewards, done, info = self.env.step(action)
         return dict(zip(historical_returns.columns, self.env.current_weights))
 
-class CVaROptimization(AllocationStrategy):
-    def __init__(self, confidence_level=0.95):
-        self.confidence_level = confidence_level
 
-    def compute_weights(self, historical_returns):
-        symbols = historical_returns.columns
-        cov_matrix = historical_returns.cov().values
 
-        def objective(weights):
-            portfolio_returns = np.dot(weights, historical_returns.T)
-            VaR = np.percentile(portfolio_returns, (1 - self.confidence_level) * 100)
-            CVaR = np.mean(portfolio_returns[portfolio_returns < VaR])
-            return -CVaR  # Minimize Conditional VaR
 
-        num_assets = len(symbols)
-        constraints = ({'type': 'eq', 'fun': lambda x: np.sum(x) - 1})
-        bounds = tuple((0, 1) for _ in range(num_assets))
-        initial_weights = num_assets * [1. / num_assets]
 
-        result = minimize(objective, initial_weights, method='SLSQP', bounds=bounds, constraints=constraints)
-        return dict(zip(symbols, result.x))
 
-class EfficientFrontier(AllocationStrategy):
-    def __init__(self, target_return=0.1):
-        self.target_return = target_return
 
-    def compute_weights(self, historical_returns):
-        cov_matrix = historical_returns.cov()
-        mean_returns = historical_returns.mean()
-        num_assets = len(mean_returns)
-        bounds = [(0, 1) for _ in range(num_assets)]
-        constraints = [{'type': 'eq', 'fun': lambda x: np.sum(x) - 1},
-                       {'type': 'eq', 'fun': lambda x: np.dot(x, mean_returns) - self.target_return}]
-        result = minimize(lambda w: np.dot(w.T, np.dot(cov_matrix, w)),
-                          np.ones(num_assets) / num_assets, bounds=bounds, constraints=constraints)
-        return dict(zip(historical_returns.columns, result.x))
+
+
+

@@ -33,14 +33,13 @@ class LivePortfolio:
     def _fetch_current_prices(self, symbols):
         """Fetch current market prices using Alpaca's API."""
         return AlpacaDataRetriever(self.api).get_last_market_data('minute', symbols)
-
+    
     def _calculate_portfolio_value(self):
         """Get the current portfolio value from Alpaca."""
         return self.broker_metrics.get_portfolio_value()
 
     def rebalance_live_portfolio(self, date, symbols, rebalance_frequency):
         """Rebalance the live portfolio to match the final target weights."""
-        self.db_manager.save_strategy(self.strategy_info)
         self.db_manager.save_weights(date, self.strategy_info['final_weights'])
 
         # Initialize Rebalancer
@@ -59,6 +58,7 @@ class LivePortfolio:
             f.seek(0)
             json.dump(data, f, indent=4)
             f.truncate()
+        self.db_manager.save_strategy(self.strategy_info)
         
         # Perform rebalancing
         asset_prices = self._fetch_current_prices(symbols)
