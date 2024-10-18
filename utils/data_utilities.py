@@ -8,5 +8,8 @@ def db_query_test():
     results=PortfolioDatabaseManager().query_portfolio_data()
     print(results)
 
+def db_delete():
+    PortfolioDatabaseManager().delete_tables()
+
 if __name__ == "__main__":
-    db_query_test()
+    db_delete()
