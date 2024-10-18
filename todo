@@ -5,3 +5,4 @@
 -allocation strategies with parameters optimisation (ex beta strategy) and model choice to add
 -create custom client order id to separate different portfolio allocation strategies
 -implement stop loss/take profit on asset and portfolio levels
+-launch 6h20

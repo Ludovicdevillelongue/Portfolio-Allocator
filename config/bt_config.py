@@ -1,18 +1,21 @@
+
+
 # Backtest configuration
+from datetime import datetime, timedelta
 
 # General settings
 data_frequency = 'day'
 broker = 'alpaca'
-symbols = ['TSLA', 'NVDA', 'MSFT', 'AAPL']
-start_date = '2024-01-01'
-end_date = '2024-09-20'
+symbols = ['TSLA', 'NVDA', 'MSFT']
+start_date = (datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d')
+end_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
 initial_capital = 100000
 rebalance_frequency = 'daily'
 
 # Backtest settings
-estimation_period = 30
-iterations = 2
-bt_port = 6000
+in_out_sample_period = 90
+iterations = 10
+bt_port = 6001
 
 
 # Strategies to use

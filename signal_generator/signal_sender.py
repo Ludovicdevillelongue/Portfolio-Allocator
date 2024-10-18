@@ -1,6 +1,8 @@
 import json
 import sys
 import os
+import threading
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import time
 from broker.broker_connect import AlpacaConnect
@@ -33,27 +35,55 @@ class PortfolioAllocator:
 
         print("Running backtests...")
         backtester = Backtester(data_handler, adjusted_close_prices, asset_returns, benchmark_returns, initial_capital,
-                                strategies, estimation_period, bt_port, rebalance_frequency)
+                                strategies, in_out_sample_period, bt_port, rebalance_frequency)
 
         backtester.run_backtest(param_grids=param_grids, iterations=iterations,
                                 optimization_algorithms=optimization_algorithms, strat_opti_bt_csv=strat_opti_bt_csv)
-
         best_strategy_name, best_sharpe = backtester.get_best_strategy()
-        strategy_info = {
-            'strategy_name': best_strategy_name,
-            'strategy_params': backtester.strategies_metrics[best_strategy_name]['best_params'],
-            'opti_algo': backtester.strategies_metrics[best_strategy_name]['best_opti_algo'],
-            'final_weights': (backtester.strategies_metrics[best_strategy_name]['weights'].iloc[-1]).to_dict(),
-        }
+        dashboard_thread = threading.Thread(target=self.run_dashboard_until_10pm, args=(backtester,))
+        dashboard_thread.start()
 
-        self.update_strategy_info(strategy_info)
-        print(f"Best strategy: {best_strategy_name} with Sharpe ratio: {best_sharpe}")
-        backtester.report_backtest()
+        if os.path.exists(strategy_info_path):
+                last_rebalance_date = self.read_strategy_info()['last_rebalance_date']
+        else:
+            last_rebalance_date = None
+        final_weights=backtester.get_latest_weights(strategies[best_strategy_name], last_rebalance_date)
+
+        if final_weights is None:
+            strategy_info = self.read_strategy_info()
+        else:
+            strategy_info = {
+                'strategy_name': best_strategy_name,
+                'strategy_params': backtester.strategies_metrics[best_strategy_name]['best_params'],
+                'opti_algo': backtester.strategies_metrics[best_strategy_name]['best_opti_algo'],
+                'final_weights': final_weights,
+            }
+            strategy_info = self.update_strategy_info(strategy_info)
+            print(f"Best strategy: {best_strategy_name} with Sharpe ratio: {best_sharpe}")
+
+
 
         print("Starting live trading...")
         live_allocation_runner = LiveAllocationRunner(self.api, broker_config_path, strategy_info, data_frequency)
         live_allocation_runner.reallocate(symbols, rebalance_frequency)
-        time.sleep(100)
+
+    def run_dashboard_until_10pm(self, backtester):
+        # Call the dashboard report once
+        backtester.report_backtest()
+
+        # Keep the thread alive until 10 PM without reopening the dashboard
+        end_time = datetime.now().replace(hour=22, minute=00, second=0, microsecond=0)
+        while datetime.now() < end_time:
+            time.sleep(10)  # Keep the thread alive, no need to re-open the dashboard
+
+        print("Dashboard exited at 10 PM")
+
+    def read_strategy_info(self):
+        if os.path.exists(strategy_info_path):
+            with open(strategy_info_path, 'r') as json_file:
+                strategy_info = json.load(json_file)
+            return strategy_info
+        return {}
 
     def update_strategy_info(self, strategy_info):
         if os.path.exists(strategy_info_path):
@@ -64,6 +94,7 @@ class PortfolioAllocator:
 
         with open(strategy_info_path, 'w') as json_file:
             json.dump(strategy_info, json_file, indent=4)
+        return strategy_info
 
 if __name__ == "__main__":
     PortfolioAllocator().run()

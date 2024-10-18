@@ -1,8 +1,8 @@
-from alloc_test.live.live_database_manager import PortfolioDatabaseManager
+from live.live_database_manager import PortfolioDatabaseManager
 
 
-def is_estimation_period_satisfied(historical_returns, estimation_period):
-    return len(historical_returns) >= estimation_period
+def is_in_out_sample_period_satisfied(historical_returns, in_out_sample_period):
+    return len(historical_returns) >= in_out_sample_period
 
 def db_query_test():
     results=PortfolioDatabaseManager().query_portfolio_data()
