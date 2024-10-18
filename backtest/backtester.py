@@ -3,6 +3,9 @@ import time
 import numpy as np
 import sys
 import os
+
+from utils.data_splitter import DataSplitter
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pandas as pd
 from backtest.portfolio import Portfolio
@@ -11,16 +14,17 @@ from reporting.bt_report import DashReport
 from strategies.strat_optimizer import StrategyOptimizer
 import pyfolio as pf
 from strategies.rebalancer import Rebalancer
-from datetime import timedelta
+from datetime import timedelta, datetime
+
 
 class StrategyRunner:
-    def __init__(self, data_handler, close_prices, asset_returns, benchmark_returns, initial_capital, estimation_period, rebalance_frequency):
+    def __init__(self, data_handler, close_prices, asset_returns, benchmark_returns, initial_capital, in_out_sample_period, rebalance_frequency):
         self.data_handler = data_handler
         self.close_prices = close_prices
         self.asset_returns=asset_returns
         self.benchmark_returns=benchmark_returns
         self.initial_capital = initial_capital
-        self.estimation_period = estimation_period
+        self.in_out_sample_period = in_out_sample_period
         self.rebalance_frequency = rebalance_frequency
         self.strategy_results = {}
         self.rebalancer = None
@@ -30,21 +34,36 @@ class StrategyRunner:
         portfolio = Portfolio(self.initial_capital, self.close_prices.columns)
         self.rebalancer = Rebalancer(strategy_instance, self.rebalance_frequency)
 
-        for date in self.asset_returns.index:
-            current_prices = self.close_prices.loc[date].to_dict()
+        # Initialize DataSplitter (80% in sample, 20% out sample)
+        data_splitter = DataSplitter(self.in_out_sample_period*0.8, self.in_out_sample_period*0.2)
+
+        date = self.asset_returns.index[0]
+
+        while date < self.asset_returns.index[-1]:
             historical_returns = self.asset_returns.loc[:date]
 
             # Check if we have enough data for the estimation period
-            if len(historical_returns) < self.estimation_period:
+            if len(historical_returns) < self.in_out_sample_period:
+                date += pd.Timedelta(days=1)
                 continue
 
-            # Rebalance the portfolio using the rebalancer
-            new_weights = self.rebalancer.rebalance(date, historical_returns)
-            if new_weights is not None:
-                portfolio.rebalance_portfolio(new_weights, current_prices, date)
-                portfolio._record_portfolio_state(date, current_prices, new_weights)
-            else:
-                portfolio._record_portfolio_state(date, current_prices)
+            # split the data into in sample and out sample data
+            in_sample_data, out_sample_data = data_splitter.split(historical_returns, date)
+
+            # rebalance on in sample data
+            new_weights = self.rebalancer.rebalance(date, in_sample_data)
+
+            # apply the new weights to out sample data
+            for out_sample_date in out_sample_data.index:
+                prices = self.close_prices.loc[out_sample_date].to_dict()
+                if new_weights is not None:
+                    portfolio.rebalance_portfolio(new_weights, prices, out_sample_date)
+                    portfolio._record_portfolio_state(out_sample_date, prices, new_weights)
+                else:
+                    portfolio._record_portfolio_state(out_sample_date, prices)
+
+            # step equal to size of out sample data
+            date = out_sample_data.index[-1] + pd.Timedelta(days=(self.in_out_sample_period*0.2))
 
         # Store results for the strategy
         return BacktestMetrics(self.close_prices).compute_strategy_metrics(portfolio, self.benchmark_returns)
@@ -52,18 +71,18 @@ class StrategyRunner:
 
 class Backtester:
     def __init__(self, data_handler, close_prices, asset_returns, benchmark_returns, initial_capital, strategies,
-                 estimation_period, bt_port, rebalance_frequency):
+                 in_out_sample_period, bt_port, rebalance_frequency):
         self.data_handler = data_handler
         self.close_prices=close_prices
         self.asset_returns = asset_returns
         self.benchmark_returns = benchmark_returns
         self.initial_capital = initial_capital
         self.strategies = strategies
-        self.estimation_period = estimation_period
+        self.in_out_sample_period = in_out_sample_period
         self.bt_port=bt_port
         self.rebalance_frequency = rebalance_frequency
         self.strategy_runner=StrategyRunner(self.data_handler, self.close_prices, self.asset_returns, self.benchmark_returns,
-                               self.initial_capital, self.estimation_period, self.rebalance_frequency)
+                               self.initial_capital, self.in_out_sample_period, self.rebalance_frequency)
         self.strategies_metrics = {}
 
 
@@ -94,10 +113,15 @@ class Backtester:
 
                 # Backtest the strategy with the best parameters
                 self.strategies_metrics[strategy_name]=self.strategy_runner.run_allocation(strategy_instance)
-                self.strategies_metrics[strategy_name]['best_params']=str(best_params)
+                self.strategies_metrics[strategy_name]['best_params']= str(best_params)
                 self.strategies_metrics[strategy_name]['best_opti_algo']=best_opti_algo
-                self.strategies_metrics[strategy_name]['last_rebalance_date']=(
-                    str(self.strategy_runner.rebalancer.last_rebalance_date))
+                self.strategies_metrics[strategy_name]['last_rebalance_date']=str(self.strategy_runner.rebalancer.
+                                                                                  last_rebalance_date)
+
+    def get_latest_weights(self, strategy_instance, last_rebalance_date):
+        self.rebalancer = Rebalancer(strategy_instance, self.rebalance_frequency, last_rebalance_date)
+        latest_weights = self.rebalancer.rebalance(datetime.now().date(), self.asset_returns)
+        return latest_weights
 
     def report_backtest(self):
         pass

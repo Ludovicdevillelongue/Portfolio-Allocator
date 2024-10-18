@@ -96,7 +96,7 @@ class DashReport:
         self.port = port
 
     def _prepare_data_for_table(self):
-        return [{'Strategy': s, **{k: round(v, 2) if isinstance(v, (float, int)) else v
+        return [{'Strategy': s, **{k: round(v, 2) if isinstance(v, (float, int)) else str(v)
                                    for k, v in m.items() if k in self.static_metrics}}
                 for s, m in self.strategies_metrics.items()]
 
