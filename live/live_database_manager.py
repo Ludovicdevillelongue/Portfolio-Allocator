@@ -89,7 +89,7 @@ class PortfolioDatabaseManager:
         cursor = self.conn.cursor()
         for symbol, weight in weights.items():
             cursor.execute('''INSERT INTO portfolio_weights (timestamp, symbol, weight)
-                              VALUES (%s, %s, %s)''', (timestamp, symbol, weight))
+                              VALUES (%s, %s, %s)''', (timestamp, symbol, float(weight)))
 
     def save_strategy(self, strategy_info):
         """Save strategy information."""
