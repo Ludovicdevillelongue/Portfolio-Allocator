@@ -81,7 +81,7 @@ class PortfolioDatabaseManager:
         """Save transaction information."""
         cursor = self.conn.cursor()
         cursor.execute('''INSERT INTO portfolio_transactions (amount, date, price, symbol)
-                          VALUES (%s, %s, %s, %s)''', (amount, date, price, symbol))
+                          VALUES (%s, %s, %s, %s)''', (amount, date, float(price), symbol))
         self.conn.commit()
 
     def save_weights(self, timestamp, weights):
@@ -128,6 +128,25 @@ class PortfolioDatabaseManager:
         selected_strategy_data = cursor.fetchall()
 
         return positions_data, prices_data, weights_data, transaction_data, cash_data, selected_strategy_data
+
+    def delete_tables(self):
+        """Query portfolio data from the database and delete tables."""
+        cursor = self.conn.cursor()
+        tables = [
+            'portfolio_positions',
+            'portfolio_prices',
+            'portfolio_weights',
+            'portfolio_cash',
+            'portfolio_transactions',
+            'portfolio_strategy'
+        ]
+        data = {}
+        for table in tables:
+            cursor.execute(f'SELECT * FROM {table}')
+            data[table] = cursor.fetchall()
+            cursor.execute(f'DROP TABLE IF EXISTS {table} CASCADE')
+        self.conn.commit()
+        return data
 
     def close(self):
         self.conn.close()
