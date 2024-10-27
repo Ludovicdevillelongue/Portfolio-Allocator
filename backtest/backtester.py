@@ -39,21 +39,28 @@ class StrategyRunner:
 
         date = self.asset_returns.index[0]
 
-        while date < self.asset_returns.index[-1]:
+        last_rebalance = False
+
+        while not last_rebalance:
+            # Use all available data up to the current date
             historical_returns = self.asset_returns.loc[:date]
 
             # Check if we have enough data for the estimation period
-            if len(historical_returns) < self.in_out_sample_period:
+            if (date-historical_returns.index[0]).days < self.in_out_sample_period:
                 date += pd.Timedelta(days=1)
                 continue
 
-            # split the data into in sample and out sample data
+            # Check if this is the final iteration based on remaining data
+            if date > self.asset_returns.index[-1]:
+                last_rebalance = True
+
+            # Split the available data into in-sample and out-sample data
             in_sample_data, out_sample_data = data_splitter.split(historical_returns, date)
 
-            # rebalance on in sample data
+            # Rebalance using in-sample data
             new_weights = self.rebalancer.rebalance(date, in_sample_data)
 
-            # apply the new weights to out sample data
+            # Apply the new weights to out-sample data
             for out_sample_date in out_sample_data.index:
                 prices = self.close_prices.loc[out_sample_date].to_dict()
                 if new_weights is not None:
@@ -62,8 +69,8 @@ class StrategyRunner:
                 else:
                     portfolio._record_portfolio_state(out_sample_date, prices)
 
-            # step equal to size of out sample data
-            date = out_sample_data.index[-1] + pd.Timedelta(days=(self.in_out_sample_period*0.2))
+            # Move to the next date based on the out-sample data size
+            date = out_sample_data.index[-1] + pd.Timedelta(days=(self.in_out_sample_period * 0.2))
 
         # Store results for the strategy
         return BacktestMetrics(self.close_prices).compute_strategy_metrics(portfolio, self.benchmark_returns)
