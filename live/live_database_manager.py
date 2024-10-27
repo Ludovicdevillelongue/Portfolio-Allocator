@@ -64,16 +64,16 @@ class PortfolioDatabaseManager:
         # Save positions
         for symbol, qty in positions.items():
             cursor.execute('''INSERT INTO portfolio_positions (timestamp, symbol, qty)
-                              VALUES (%s, %s, %s)''', (timestamp, symbol, qty))
+                              VALUES (%s, %s, %s)''', (timestamp, symbol, float(qty)))
 
         # Save prices
         for symbol, price in prices.items():
             cursor.execute('''INSERT INTO portfolio_prices (timestamp, symbol, price)
-                              VALUES (%s, %s, %s)''', (timestamp, symbol, price))
+                              VALUES (%s, %s, %s)''', (timestamp, symbol, float(price)))
 
         # Save cash balance
         cursor.execute('''INSERT INTO portfolio_cash (timestamp, cash_balance)
-                            VALUES (%s, %s)''', (timestamp, cash_balance))
+                            VALUES (%s, %s)''', (timestamp, float(cash_balance)))
 
         self.conn.commit()
 
@@ -81,7 +81,7 @@ class PortfolioDatabaseManager:
         """Save transaction information."""
         cursor = self.conn.cursor()
         cursor.execute('''INSERT INTO portfolio_transactions (amount, date, price, symbol)
-                          VALUES (%s, %s, %s, %s)''', (amount, date, float(price), symbol))
+                          VALUES (%s, %s, %s, %s)''', (float(amount), date, float(price), symbol))
         self.conn.commit()
 
     def save_weights(self, timestamp, weights):

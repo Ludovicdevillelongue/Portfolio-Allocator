@@ -55,8 +55,10 @@ class LiveMetrics:
         metrics['portfolio_values'], metrics['portfolio_pnl'], metrics[
             'portfolio_returns'] = self.compute_portfolio_pnl_returns(portfolio)
         metrics['weights'] = pd.DataFrame(portfolio.weight_history).T
-        metrics['transaction'] = pd.DataFrame(portfolio.transaction_history).set_index('date')
-
+        try:
+            metrics['transaction'] = pd.DataFrame(portfolio.transaction_history).set_index('date')
+        except Exception as e:
+            metrics['transaction'] = pd.DataFrame()
         # Rolling metrics
         metrics['rolling_sharpe'] = pf.timeseries.rolling_sharpe(metrics['portfolio_returns'], 126)
         metrics['rolling_beta'] = pf.timeseries.rolling_beta(metrics['portfolio_returns'], benchmark_returns, 126)

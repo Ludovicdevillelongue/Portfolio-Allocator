@@ -10,6 +10,7 @@ def db_query_test():
 
 def db_delete():
     PortfolioDatabaseManager().delete_tables()
+    print("Tables deleted")
 
 if __name__ == "__main__":
     db_delete()

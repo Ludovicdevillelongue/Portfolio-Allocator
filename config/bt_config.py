@@ -6,15 +6,17 @@ from datetime import datetime, timedelta
 # General settings
 data_frequency = 'day'
 broker = 'alpaca'
-symbols = ['TSLA', 'NVDA', 'MSFT']
-start_date = (datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d')
+symbols = [
+    'TSLA', 'NVDA', 'MSFT'
+]
+start_date = (datetime.now() - timedelta(days=500)).strftime('%Y-%m-%d')
 end_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
 initial_capital = 100000
 rebalance_frequency = 'daily'
 
 # Backtest settings
 in_out_sample_period = 90
-iterations = 10
+iterations = 2
 bt_port = 6001
 
 
@@ -25,12 +27,12 @@ from xgboost import XGBRegressor
 from sklearn.ensemble import RandomForestRegressor
 
 strategies = {
-    # 'MinVol': MinVol(),
-    # 'MaximumDivergence': MaximumDivergence(),
+    'MinVol': MinVol(),
+    'MaximumDivergence': MaximumDivergence(),
     'MeanVar': MeanVar(),
     'ERC': ERC(),
-    # 'CVaROptimization': CVaROptimization(),
-    # 'HierarchicalRiskParity': HierarchicalRiskParity(),
+    'CVaROptimization': CVaROptimization(),
+    'HierarchicalRiskParity': HierarchicalRiskParity(),
     # 'AdvancedHierarchicalRiskParity': AdvancedHierarchicalRiskParity(),
     # 'MLModelAllocator': MLModelAllocator(),
     # 'ReinforcementLearningAllocator': ReinforcementLearningAllocator(),
