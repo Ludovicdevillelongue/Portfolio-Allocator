@@ -57,11 +57,10 @@ class StrategyRunner:
             # Split the available data into in-sample and out-sample data
             in_sample_data, out_sample_data = data_splitter.split(historical_returns, date)
 
-            # Rebalance using in-sample data
-            new_weights = self.rebalancer.rebalance(date, in_sample_data)
-
             # Apply the new weights to out-sample data
             for out_sample_date in out_sample_data.index:
+                # Rebalance using in-sample data
+                new_weights = self.rebalancer.rebalance(out_sample_date, in_sample_data)
                 prices = self.close_prices.loc[out_sample_date].to_dict()
                 if new_weights is not None:
                     portfolio.rebalance_portfolio(new_weights, prices, out_sample_date)
