@@ -43,10 +43,15 @@ class LiveAllocationRunner:
         date = datetime.now().date()
         self.live_portfolio.rebalance_live_portfolio(date, symbols, rebalance_frequency)
 
-    def get_live_metrics(self):
+
+    def record_live_metrics(self):
         while True:
             current_datetime = time.strftime("%Y-%m-%d %H:%M")  # Fetch current timestamp
             self.live_portfolio._record_portfolio_state(current_datetime)  # Record portfolio state
+            time.sleep(60)
+
+    def get_live_metrics(self):
+        while True:
             self.live_portfolio._query_portfolio_state()
             self.benchmark_returns = pd.DataFrame()
             close_prices = self.convert_portfolio_results(self.live_portfolio)

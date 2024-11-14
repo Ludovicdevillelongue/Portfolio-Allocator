@@ -113,8 +113,6 @@ class LiveDashReport:
             [Input('interval-component', 'n_intervals')]
         )
         def update_live_data(n_intervals):
-            if n_intervals == 0:
-                raise dash.exceptions.PreventUpdate
 
             # Fetch the latest live portfolio metrics from the live allocation runner
             self.portfolio_metrics = self.live_allocation_runner.get_live_metrics()
@@ -194,4 +192,3 @@ class LiveDashReport:
         # Open the browser and run the Dash server
         webbrowser.open(f"http://127.0.0.1:{self.port}")
         serve(self.app.server, host='0.0.0.0', port=self.port)
-
