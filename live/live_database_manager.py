@@ -84,6 +84,22 @@ class PortfolioDatabaseManager:
                           VALUES (%s, %s, %s, %s)''', (float(amount), date, float(price), symbol))
         self.conn.commit()
 
+    def save_average_filled_price(self, average_cost, average_cost_datetime, symbol):
+        cursor = self.conn.cursor()
+        cursor.execute('''UPDATE portfolio_prices 
+                          SET price = %s 
+                          WHERE timestamp = %s AND symbol = %s''',
+                       (float(average_cost), average_cost_datetime, symbol))
+        self.conn.commit()
+
+    def save_filled_qty(self, filled_qty, filled_qty_datetime, symbol):
+        cursor = self.conn.cursor()
+        cursor.execute('''UPDATE portfolio_positions 
+                          SET qty = %s 
+                          WHERE timestamp = %s AND symbol = %s''',
+                       (float(filled_qty), filled_qty_datetime, symbol))
+        self.conn.commit()
+
     def save_weights(self, timestamp, weights):
         # Save weights
         cursor = self.conn.cursor()
@@ -104,15 +120,15 @@ class PortfolioDatabaseManager:
         cursor = self.conn.cursor()
 
         # Query positions
-        cursor.execute('''SELECT * FROM portfolio_positions''')
+        cursor.execute('''SELECT * FROM portfolio_positions ORDER BY timestamp ASC''')
         positions_data = cursor.fetchall()
 
         # Query prices
-        cursor.execute('''SELECT * FROM portfolio_prices''')
+        cursor.execute('''SELECT * FROM portfolio_prices ORDER BY timestamp ASC''')
         prices_data = cursor.fetchall()
 
         # Query weights
-        cursor.execute('''SELECT * FROM portfolio_weights''')
+        cursor.execute('''SELECT * FROM portfolio_weights ORDER BY timestamp ASC''')
         weights_data = cursor.fetchall()
 
         # Query Transaction Data
@@ -120,7 +136,7 @@ class PortfolioDatabaseManager:
         transaction_data = cursor.fetchall()
 
         # Query Cash data
-        cursor.execute('''SELECT * FROM portfolio_cash''')
+        cursor.execute('''SELECT * FROM portfolio_cash ORDER BY timestamp ASC''')
         cash_data = cursor.fetchall()
 
         # Query Strategy Data

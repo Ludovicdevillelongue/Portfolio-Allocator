@@ -51,22 +51,24 @@ class StrategyRunner:
                 continue
 
             # Check if this is the final iteration based on remaining data
-            if date > self.asset_returns.index[-1]:
+            if date >= self.asset_returns.index[-1]:
                 last_rebalance = True
 
             # Split the available data into in-sample and out-sample data
             in_sample_data, out_sample_data = data_splitter.split(historical_returns, date)
 
+            # Rebalance using in-sample data
+            new_weights = strategy_instance.compute_weights(in_sample_data)
+
             # Apply the new weights to out-sample data
             for out_sample_date in out_sample_data.index:
-                # Rebalance using in-sample data
-                new_weights = self.rebalancer.rebalance(out_sample_date, in_sample_data)
                 prices = self.close_prices.loc[out_sample_date].to_dict()
-                if new_weights is not None:
+                if not self.rebalancer.should_rebalance(out_sample_date):
+                    portfolio._record_portfolio_state(out_sample_date, prices)
+                else:
                     portfolio.rebalance_portfolio(new_weights, prices, out_sample_date)
                     portfolio._record_portfolio_state(out_sample_date, prices, new_weights)
-                else:
-                    portfolio._record_portfolio_state(out_sample_date, prices)
+                    self.rebalancer=Rebalancer(strategy_instance, self.rebalance_frequency, out_sample_date)
 
             # Move to the next date based on the out-sample data size
             date = out_sample_data.index[-1] + pd.Timedelta(days=(self.in_out_sample_period * 0.2))

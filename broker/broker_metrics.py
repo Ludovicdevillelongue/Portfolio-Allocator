@@ -1,5 +1,6 @@
 import os
 import warnings
+from datetime import datetime
 
 warnings.filterwarnings('ignore')
 import alpaca_trade_api as tradeapi
@@ -60,6 +61,21 @@ class AlpacaPlatformMetrics(TradingPlatform):
 
     def get_all_orders(self):
         orders = self.api.list_orders(status='all')
+        orders_list = [order._raw for order in orders]
+        df_orders = pd.DataFrame(orders_list)
+        if df_orders.empty:
+            return pd.DataFrame()
+        else:
+            df_orders['created_at'] = pd.to_datetime(df_orders['created_at']).dt.tz_convert(
+                'Europe/Paris')
+            df_orders['filled_at'] = pd.to_datetime(df_orders['filled_at']).dt.tz_convert(
+                'Europe/Paris')
+            return df_orders[['created_at', 'filled_at', 'asset_id', 'symbol',
+                              'asset_class', 'qty', 'filled_qty', 'order_type', 'side', 'filled_avg_price',
+                              'time_in_force', 'limit_price', 'stop_price']]
+
+    def get_last_orders(self):
+        orders = self.api.list_orders(status=all, after=datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).isoformat() + "Z")
         orders_list = [order._raw for order in orders]
         df_orders = pd.DataFrame(orders_list)
         if df_orders.empty:
