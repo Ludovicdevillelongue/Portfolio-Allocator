@@ -98,7 +98,7 @@ class LivePortfolio:
     def _update_prices_with_average_cost(self, prices):
         """Update prices with average costs if needed"""
         average_costs = self.broker_metrics.get_last_orders()
-        if average_costs.empty:
+        if average_costs.empty or average_costs['filled_at'].isna().all():
             pass
         else:
             for symbol in average_costs['symbol'].unique():
@@ -118,7 +118,7 @@ class LivePortfolio:
     def _update_qty_with_filled_qty(self, positions):
         """Update qties with filled quantities if needed"""
         filled_qties = self.broker_metrics.get_last_orders()
-        if filled_qties.empty:
+        if filled_qties.empty or filled_qties['filled_at'].isna().all():
             pass
         else:
             for symbol in filled_qties['symbol'].unique():
