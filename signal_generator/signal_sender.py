@@ -65,7 +65,7 @@ class PortfolioAllocator:
 
         print("Starting live trading...")
         live_allocation_runner = LiveAllocationRunner(self.api, broker_config_path, strategy_info, data_frequency)
-        live_allocation_runner.reallocate(symbols, rebalance_frequency)
+        live_allocation_runner.reallocate(rebalance_frequency)
 
     def run_dashboard_until_10pm(self, backtester):
         # Call the dashboard report once

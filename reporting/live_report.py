@@ -1,4 +1,5 @@
 import dash
+import pandas as pd
 from dash import dcc, html
 from dash.dependencies import Input, Output
 import dash_table
@@ -20,8 +21,9 @@ class LiveDashReport:
         self.portfolio_metrics = self.live_allocation_runner.get_live_metrics()
         self.dynamic_metrics = ['rolling_sharpe', 'rolling_beta', 'portfolio_values', 'portfolio_cumulative_returns', 'portfolio_pnl',
                                 'portfolio_cum_pnl', 'cash']
-        self.static_metrics = ['annual_return', 'annual_volatility', 'sharpe_ratio', 'calmar_ratio', 'max_drawdown',
-                               'omega_ratio', 'sortino_ratio', 'tail_ratio', 'daily_var']
+        self.static_metrics = ['annual_return', 'annual_volatility', 'alpha', 'beta', 'sharpe_ratio', 'sortino_ratio',
+                               'max_drawdown', 'calmar_ratio', 'omega_ratio', 'tail_ratio', 'daily_var','tracking_error',
+                               'information_ratio']
         self.asset_metrics = ['weights', 'asset_prices', 'positions', 'market_values', 'asset_pnl', 'asset_cum_pnl',
                               'asset_cumulative_returns']
         self.app = dash.Dash(__name__)
@@ -97,6 +99,14 @@ class LiveDashReport:
             *[dcc.Graph(id=f'asset-{metric}-graph') for metric in
               self.asset_metrics],
 
+            html.H1('Drawdown Table'),
+            dash_table.DataTable(
+                id='drawdown-table',
+                style_table={'overflowX': 'auto'},
+                style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold'},
+                style_cell={'textAlign': 'center'}
+            ),
+
             # Interval component to trigger updates every 60 seconds
             dcc.Interval(id='interval-component', interval=self.update_interval, n_intervals=0)
         ])
@@ -109,6 +119,7 @@ class LiveDashReport:
                 *[Output(f'graph-{metric}', 'figure') for metric in self.dynamic_metrics],
                 *[Output(f'asset-{metric}-graph', 'figure') for metric in
                   self.asset_metrics],
+                Output('drawdown-table', 'data'),
             ],
             [Input('interval-component', 'n_intervals')]
         )
@@ -186,7 +197,11 @@ class LiveDashReport:
                 if metric_name in self.asset_metrics
             ]
 
-            return [performance_data] + rolling_metric_figures + asset_metric_figures
+            # drawdown table
+            drawdown_df = self.portfolio_metrics['drawdown_table']
+            drawdown_data = drawdown_df.to_dict('records') if not drawdown_df.empty else pd.DataFrame()
+
+            return [performance_data] + rolling_metric_figures + asset_metric_figures + [drawdown_data]
 
     def run_server(self):
         # Open the browser and run the Dash server

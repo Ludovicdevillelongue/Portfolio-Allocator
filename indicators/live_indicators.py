@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 import pyfolio as pf
 class LiveMetrics:
-    def __init__(self, close_prices):
-        self.close_prices = close_prices
+    def __init__(self, prices):
+        self.prices = prices
         self.asset_returns = self.compute_asset_returns()
 
     def compute_asset_returns(self):
-        return self.close_prices.pct_change()
+        return self.prices.pct_change()
 
     def compute_asset_pnl(self, portfolio):
         asset_pnl = pd.DataFrame()
@@ -43,8 +43,8 @@ class LiveMetrics:
         metrics['cash'] = pd.Series(portfolio.cash_history, name='Cash_Balance')
         metrics['positions'] = (pd.DataFrame(portfolio.position_history).T).fillna(0)
         available_dates = metrics['positions'].index
-        metrics['asset_prices'] = self.close_prices.loc[
-            available_dates, metrics['positions'].columns.intersection(self.close_prices.columns)]
+        metrics['asset_prices'] = self.prices.loc[
+            available_dates, metrics['positions'].columns.intersection(self.prices.columns)]
         try:
             metrics['asset_returns'] = (self.asset_returns.loc[
                 available_dates[1:], metrics['positions'].columns.intersection(self.asset_returns.columns)])
@@ -60,8 +60,8 @@ class LiveMetrics:
         except Exception as e:
             metrics['transaction'] = pd.DataFrame()
         # Rolling metrics
-        metrics['rolling_sharpe'] = pf.timeseries.rolling_sharpe(metrics['portfolio_returns'], 126)
-        metrics['rolling_beta'] = pf.timeseries.rolling_beta(metrics['portfolio_returns'], benchmark_returns, 126)
+        metrics['rolling_sharpe'] = pf.timeseries.rolling_sharpe(metrics['portfolio_returns'], 30)
+        metrics['rolling_beta'] = pf.timeseries.rolling_beta(metrics['portfolio_returns'], benchmark_returns, 30)
         metrics['portfolio_cumulative_returns'] = (1 + metrics['portfolio_returns']).cumprod() - 1
         metrics['portfolio_cum_pnl'] = metrics['portfolio_pnl'].cumsum()
         metrics['asset_cum_pnl'] = metrics['asset_pnl'].cumsum()
@@ -70,12 +70,17 @@ class LiveMetrics:
         # Performance metrics
         metrics['annual_return'] = pf.timeseries.annual_return(metrics['portfolio_returns'])
         metrics['annual_volatility'] = pf.timeseries.annual_volatility(metrics['portfolio_returns'])
+        metrics['alpha'], metrics['beta']=pf.timeseries.alpha_beta(metrics['portfolio_returns'], benchmark_returns)
         metrics['sharpe_ratio'] = pf.timeseries.sharpe_ratio(metrics['portfolio_returns'])
-        metrics['calmar_ratio'] = pf.timeseries.calmar_ratio(metrics['portfolio_returns'])
-        metrics['max_drawdown'] = pf.timeseries.max_drawdown(metrics['portfolio_returns'])
-        metrics['omega_ratio'] = pf.timeseries.omega_ratio(metrics['portfolio_returns'])
         metrics['sortino_ratio'] = pf.timeseries.sortino_ratio(metrics['portfolio_returns'])
+        metrics['max_drawdown'] = pf.timeseries.max_drawdown(metrics['portfolio_returns'])
+        metrics['calmar_ratio'] = pf.timeseries.calmar_ratio(metrics['portfolio_returns'])
+        metrics['omega_ratio'] = pf.timeseries.omega_ratio(metrics['portfolio_returns'])
         metrics['tail_ratio'] = pf.timeseries.tail_ratio(metrics['portfolio_returns'])
         metrics['daily_var'] = pf.timeseries.value_at_risk(metrics['portfolio_returns'])
-
+        metrics['tracking_error'] = (metrics['portfolio_returns']-benchmark_returns).std()
+        metrics['information_ratio'] = metrics['alpha']/metrics['tracking_error']
+        metrics['drawdown_table'] = (pf.timeseries.gen_drawdown_table(metrics['portfolio_returns']).dropna()
+                                     .drop_duplicates(subset='Peak date', keep='last')
+                                     .applymap(lambda x: round(x, 2) if isinstance(x, (float, int)) else x))
         return metrics

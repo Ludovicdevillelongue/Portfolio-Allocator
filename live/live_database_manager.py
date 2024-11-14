@@ -34,6 +34,11 @@ class PortfolioDatabaseManager:
                             symbol VARCHAR(10),
                             price REAL)''')
 
+        cursor.execute('''CREATE TABLE IF NOT EXISTS portfolio_volumes (
+                            timestamp TIMESTAMP,
+                            symbol VARCHAR(10),
+                            volume REAL)''')
+
         cursor.execute('''CREATE TABLE IF NOT EXISTS portfolio_weights (
                             timestamp TIMESTAMP,
                             symbol VARCHAR(10),
@@ -57,7 +62,7 @@ class PortfolioDatabaseManager:
 
         self.conn.commit()
 
-    def save_portfolio_state(self, timestamp, positions, prices, cash_balance):
+    def save_portfolio_state(self, timestamp, positions, prices, volumes, cash_balance):
         """Store the portfolio state (positions, prices, weights, and cash) in the database."""
         cursor = self.conn.cursor()
 
@@ -70,6 +75,10 @@ class PortfolioDatabaseManager:
         for symbol, price in prices.items():
             cursor.execute('''INSERT INTO portfolio_prices (timestamp, symbol, price)
                               VALUES (%s, %s, %s)''', (timestamp, symbol, float(price)))
+        # Save volumes
+        for symbol, volume in volumes.items():
+            cursor.execute('''INSERT INTO portfolio_volumes (timestamp, symbol, volume)
+                              VALUES (%s, %s, %s)''', (timestamp, symbol, float(volume)))
 
         # Save cash balance
         cursor.execute('''INSERT INTO portfolio_cash (timestamp, cash_balance)
@@ -90,14 +99,6 @@ class PortfolioDatabaseManager:
                           SET price = %s 
                           WHERE timestamp = %s AND symbol = %s''',
                        (float(average_cost), average_cost_datetime, symbol))
-        self.conn.commit()
-
-    def save_filled_qty(self, filled_qty, filled_qty_datetime, symbol):
-        cursor = self.conn.cursor()
-        cursor.execute('''UPDATE portfolio_positions 
-                          SET qty = %s 
-                          WHERE timestamp = %s AND symbol = %s''',
-                       (float(filled_qty), filled_qty_datetime, symbol))
         self.conn.commit()
 
     def save_weights(self, timestamp, weights):
@@ -127,6 +128,10 @@ class PortfolioDatabaseManager:
         cursor.execute('''SELECT * FROM portfolio_prices ORDER BY timestamp ASC''')
         prices_data = cursor.fetchall()
 
+        # Query volumes
+        cursor.execute('''SELECT * FROM portfolio_volumes ORDER BY timestamp ASC''')
+        volumes_data = cursor.fetchall()
+
         # Query weights
         cursor.execute('''SELECT * FROM portfolio_weights ORDER BY timestamp ASC''')
         weights_data = cursor.fetchall()
@@ -143,7 +148,7 @@ class PortfolioDatabaseManager:
         cursor.execute('''SELECT * FROM portfolio_strategy''')
         selected_strategy_data = cursor.fetchall()
 
-        return positions_data, prices_data, weights_data, transaction_data, cash_data, selected_strategy_data
+        return positions_data, prices_data, volumes_data, weights_data, transaction_data, cash_data, selected_strategy_data
 
     def delete_tables(self):
         """Query portfolio data from the database and delete tables."""
@@ -151,6 +156,7 @@ class PortfolioDatabaseManager:
         tables = [
             'portfolio_positions',
             'portfolio_prices',
+            'portfolio_volumes',
             'portfolio_weights',
             'portfolio_cash',
             'portfolio_transactions',

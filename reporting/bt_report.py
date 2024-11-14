@@ -88,7 +88,8 @@ class DashReport:
         self.dynamic_metrics = ['rolling_sharpe', 'rolling_beta', 'portfolio_values', 'portfolio_cumulative_returns',
                                 'portfolio_pnl', 'portfolio_cum_pnl', 'cash']
         self.static_metrics = ['best_opti_algo', 'best_params', 'last_rebalance_date', 'annual_return', 'annual_volatility',
-                               'sharpe_ratio', 'calmar_ratio', 'max_drawdown', 'omega_ratio', 'sortino_ratio', 'tail_ratio', 'daily_var']
+                               'alpha', 'beta', 'sharpe_ratio', 'sortino_ratio', 'max_drawdown', 'calmar_ratio', 'omega_ratio',
+                               'tail_ratio', 'daily_var', 'tracking_error','information_ratio']
         self.asset_metrics = ['weights', 'asset_prices', 'positions', 'market_values', 'asset_pnl', 'asset_cum_pnl', 'asset_cumulative_returns']
         self.app = dash.Dash(__name__)
         self._setup_layout()
@@ -133,6 +134,7 @@ class DashReport:
                 style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold'},
                 style_cell={'textAlign': 'center'}),
 
+
             html.H1('Strategies Rolling Performance Metrics'),
 
             *[dcc.Graph(id=f'graph-{metric}', figure=self._generate_dynamic_metric_figure(metric)) for metric in self.dynamic_metrics],
@@ -141,6 +143,11 @@ class DashReport:
             dcc.Dropdown(id='strategy-dropdown', options=[{'label': s, 'value': s} for s in self.strategies_metrics.keys()],
                          value=list(self.strategies_metrics.keys())[0], clearable=False, style={'width': '50%'}),
             *[dcc.Graph(id=f'asset-{metric}-graph') for metric in self.asset_metrics],
+
+            html.H1('Drawdown Table'),
+            dash_table.DataTable(id='drawdown-table', style_table={'overflowX': 'auto'},
+                                 style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold'},
+                                 style_cell={'textAlign': 'center'}),
 
             html.H1('Asset Correlation Heatmap'),
             dcc.Graph(id='correlation-heatmap', figure=self._generate_correlation_heatmap())
@@ -220,6 +227,26 @@ class DashReport:
                 if metric_name in self.asset_metrics
             ]
             return figures
+
+        # Drawdown Tables callback
+        @self.app.callback(
+            [Output('drawdown-table', 'columns'), Output('drawdown-table', 'data')],
+            [Input('strategy-dropdown', 'value')]
+        )
+        def update_drawdown_table(selected_strategy):
+            # Extract the 'drawdown_table' DataFrame for the selected strategy
+            drawdown_df = self.strategies_metrics[selected_strategy].get('drawdown_table')
+
+            if drawdown_df is not None:
+                # Convert DataFrame columns and data to the appropriate format for DataTable
+                columns = [{"name": i, "id": i} for i in drawdown_df.columns]
+                data = drawdown_df.to_dict('records')
+            else:
+                # Return empty columns and data if 'drawdown_table' is not present
+                columns = []
+                data = []
+
+            return columns, data
 
     def run_server(self):
         webbrowser.open(f"http://127.0.0.1:{self.port}")
