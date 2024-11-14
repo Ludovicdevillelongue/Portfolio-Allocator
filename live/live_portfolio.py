@@ -14,7 +14,7 @@ from broker.broker_metrics import AlpacaPlatformMetrics
 from broker.broker_order import AlpacaTradingBot
 from data_management.data_retriever import AlpacaDataRetriever
 from strategies.rebalancer import Rebalancer
-
+from config.bt_config import *
 
 class LivePortfolio:
     def __init__(self, api, broker_config_path, strategy_info, data_frequency, db_manager):
@@ -36,7 +36,7 @@ class LivePortfolio:
         self.broker_orders = AlpacaTradingBot(self.api, AlpacaConnect(self.broker_config_path).get_config())
         self.last_filled_avg_price_update = defaultdict(lambda: None)
 
-    def _fetch_current_prices(self, symbols):
+    def _fetch_current_prices_volumes(self):
         """Fetch current market prices using Alpaca's API."""
         return AlpacaDataRetriever(self.api).get_last_market_data('minute', symbols)
 
@@ -44,7 +44,7 @@ class LivePortfolio:
         """Get the current portfolio value from Alpaca."""
         return self.broker_metrics.get_portfolio_value()
 
-    def rebalance_live_portfolio(self, date, symbols, rebalance_frequency):
+    def rebalance_live_portfolio(self, date, rebalance_frequency):
         """Rebalance the live portfolio to match the final target weights."""
         self.db_manager.save_weights(date, self.strategy_info['final_weights'])
 
@@ -67,7 +67,7 @@ class LivePortfolio:
         self.db_manager.save_strategy(self.strategy_info)
 
         # Perform rebalancing
-        asset_prices = self._fetch_current_prices(symbols)
+        asset_prices, _ = self._fetch_current_prices_volumes()
         portfolio_value = self._calculate_portfolio_value()
         try:
             positions = self.broker_metrics.get_all_positions()
@@ -105,7 +105,7 @@ class LivePortfolio:
                 average_cost_datetime = (
                     pd.Timestamp(average_costs[average_costs['symbol'] == symbol]['filled_at'].values[0]).tz_localize(
                         'UTC')
-                    .tz_convert('Europe/Paris').replace(second=0, microsecond=0).tz_localize(None))
+                    .tz_convert('Europe/Paris').floor('T').tz_localize(None))
                 average_cost = round(
                     float(average_costs[average_costs['symbol'] == symbol]['filled_avg_price'].values[0]), 4)
                 price_to_update = \
@@ -114,26 +114,6 @@ class LivePortfolio:
                     # replace in db
                     self.db_manager.save_average_filled_price(average_cost, average_cost_datetime, symbol)
                     print(f"Updated {symbol} price to average_cost: {average_cost} at {average_cost_datetime}")
-
-    def _update_qty_with_filled_qty(self, positions):
-        """Update qties with filled quantities if needed"""
-        filled_qties = self.broker_metrics.get_last_orders()
-        if filled_qties.empty or filled_qties['filled_at'].isna().all():
-            pass
-        else:
-            for symbol in filled_qties['symbol'].unique():
-                filled_qty_datetime = (
-                    pd.Timestamp(filled_qties[filled_qties['symbol'] == symbol]['filled_at'].values[0]).tz_localize(
-                        'UTC')
-                    .tz_convert('Europe/Paris').replace(second=0, microsecond=0).tz_localize(None))
-                filled_qty = round(float(filled_qties[filled_qties['symbol'] == symbol]['filled_qty'].values[0]), 4)
-                qty_to_update = \
-                positions[(positions["datetime"] == filled_qty_datetime) & (positions['symbol'] == symbol)][
-                    'qty'].values[0]
-                if filled_qty != qty_to_update:
-                    # replace in db
-                    self.db_manager.save_filled_qty(filled_qty, filled_qty_datetime, symbol)
-                    print(f"Updated {symbol} qty to filled_qty: {filled_qty} at {filled_qty_datetime}")
 
     def _record_portfolio_state(self, date):
         """Record the portfolio state after rebalancing."""
@@ -149,18 +129,20 @@ class LivePortfolio:
             positions = dict(zip(positions_prices['symbol'], positions_prices['filled_qty']))
             prices = dict(zip(positions_prices['symbol'], positions_prices['filled_avg_price']))
 
+        # Get Volumes
+        _, volumes = self._fetch_current_prices_volumes()
         # Record portfolio state in the database
         self.db_manager.save_portfolio_state(
             date,
             positions,
             prices,
+            volumes,
             cash_balance
         )
 
     def _query_portfolio_state(self):
-        (self.position_history, self.price_history, self.weight_history, self.transaction_history, self.cash_history,
+        (self.position_history, self.price_history, self.volume_history, self.weight_history, self.transaction_history, self.cash_history,
          self.strategy_history) = (
             self.db_manager.query_portfolio_data())
         self._update_prices_with_average_cost(pd.DataFrame(self.price_history, columns=['datetime', 'symbol', 'price']))
-        self._update_qty_with_filled_qty(pd.DataFrame(self.position_history, columns=['datetime', 'symbol', 'qty']))
 

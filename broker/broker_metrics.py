@@ -68,8 +68,11 @@ class AlpacaPlatformMetrics(TradingPlatform):
         else:
             df_orders['created_at'] = pd.to_datetime(df_orders['created_at']).dt.tz_convert(
                 'Europe/Paris')
-            df_orders['filled_at'] = pd.to_datetime(df_orders['filled_at']).dt.tz_convert(
-                'Europe/Paris')
+            if df_orders['filled_at'].notna().any():
+                df_orders['filled_at'] = pd.to_datetime(df_orders['filled_at']).dt.tz_convert(
+                    'Europe/Paris')
+            else:
+                pass
             return df_orders[['created_at', 'filled_at', 'asset_id', 'symbol',
                               'asset_class', 'qty', 'filled_qty', 'order_type', 'side', 'filled_avg_price',
                               'time_in_force', 'limit_price', 'stop_price']]

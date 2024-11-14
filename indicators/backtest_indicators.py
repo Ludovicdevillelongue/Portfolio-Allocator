@@ -65,12 +65,17 @@ class BacktestMetrics:
         # Performance metrics
         metrics['annual_return'] = pf.timeseries.annual_return(metrics['portfolio_returns'])
         metrics['annual_volatility'] = pf.timeseries.annual_volatility(metrics['portfolio_returns'])
+        metrics['alpha'], metrics['beta']=pf.timeseries.alpha_beta(metrics['portfolio_returns'], benchmark_returns)
         metrics['sharpe_ratio'] = pf.timeseries.sharpe_ratio(metrics['portfolio_returns'])
-        metrics['calmar_ratio'] = pf.timeseries.calmar_ratio(metrics['portfolio_returns'])
-        metrics['max_drawdown'] = pf.timeseries.max_drawdown(metrics['portfolio_returns'])
-        metrics['omega_ratio'] = pf.timeseries.omega_ratio(metrics['portfolio_returns'])
         metrics['sortino_ratio'] = pf.timeseries.sortino_ratio(metrics['portfolio_returns'])
+        metrics['max_drawdown'] = pf.timeseries.max_drawdown(metrics['portfolio_returns'])
+        metrics['calmar_ratio'] = pf.timeseries.calmar_ratio(metrics['portfolio_returns'])
+        metrics['omega_ratio'] = pf.timeseries.omega_ratio(metrics['portfolio_returns'])
         metrics['tail_ratio'] = pf.timeseries.tail_ratio(metrics['portfolio_returns'])
         metrics['daily_var'] = pf.timeseries.value_at_risk(metrics['portfolio_returns'])
-
+        metrics['tracking_error'] = (metrics['portfolio_returns']-benchmark_returns).std()
+        metrics['information_ratio'] = metrics['alpha']/metrics['tracking_error']
+        metrics['drawdown_table'] = pf.timeseries.gen_drawdown_table(
+            pd.Series(metrics['portfolio_returns'].values, index=pd.to_datetime(metrics['portfolio_returns'].index))
+        ).dropna().applymap(lambda x: round(x, 2) if isinstance(x, (float, int)) else x)
         return metrics

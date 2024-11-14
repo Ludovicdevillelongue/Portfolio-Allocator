@@ -2,10 +2,12 @@ import os
 from datetime import datetime
 import time
 import pandas as pd
+
+from backtest.benchmark_portfolio import BenchmarkPortfolio
 from indicators.live_indicators import LiveMetrics
 from live.live_database_manager import PortfolioDatabaseManager
 from live.live_portfolio import LivePortfolio
-
+from config.bt_config import *
 
 class LiveAllocationRunner:
     def __init__(self, api, broker_config_path, strategy_info, data_frequency):
@@ -35,13 +37,13 @@ class LiveAllocationRunner:
         live_portfolio.cash_history = dict(live_portfolio.cash_history)
         return close_prices
 
-    def reallocate(self, symbols, rebalance_frequency):
+    def reallocate(self, rebalance_frequency):
 
         """Run the live portfolio rebalancing process."""
 
         # Step 1: Rebalance the portfolio once
         date = datetime.now().date()
-        self.live_portfolio.rebalance_live_portfolio(date, symbols, rebalance_frequency)
+        self.live_portfolio.rebalance_live_portfolio(date, rebalance_frequency)
 
 
     def record_live_metrics(self):
@@ -53,7 +55,12 @@ class LiveAllocationRunner:
     def get_live_metrics(self):
         while True:
             self.live_portfolio._query_portfolio_state()
-            self.benchmark_returns = pd.DataFrame()
+            volume_history=(pd.DataFrame(self.live_portfolio.volume_history, columns=['datetime', 'symbol', 'volume']).
+                            pivot(index='datetime', columns='symbol', values='volume'))
+            price_history=(pd.DataFrame(self.live_portfolio.price_history, columns=['datetime', 'symbol', 'price']).
+                           pivot(index='datetime', columns='symbol', values='price'))
+            self.benchmark_returns = (BenchmarkPortfolio(symbols, volume_history).
+                                      compute_benchmark_returns(LiveMetrics(price_history).compute_asset_returns()))
             close_prices = self.convert_portfolio_results(self.live_portfolio)
             portfolio_metrics = LiveMetrics(close_prices).compute_strategy_metrics(self.live_portfolio, self.benchmark_returns)
             portfolio_metrics['strategy_history'] = pd.DataFrame(self.live_portfolio.strategy_history,
