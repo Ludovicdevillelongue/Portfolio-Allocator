@@ -8,9 +8,9 @@ import webbrowser
 from waitress import serve
 import time
 class LiveDashReport:
-    def __init__(self, live_allocation_runner, port, update_interval=60000):
+    def __init__(self, live_allocation_runner, port, update_interval=300000):
         """
-        Initialize the DashReport to fetch live metrics every 60 seconds.
+        Initialize the DashReport to fetch live metrics every 5 min.
         :param live_allocation_runner: Instance of LiveAllocationRunner to fetch live metrics.
         :param port: Port to run the Dash server on.
         :param update_interval: Time interval in milliseconds for updating the dashboard (default: 60000 ms).

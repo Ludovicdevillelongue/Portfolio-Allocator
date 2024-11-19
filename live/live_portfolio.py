@@ -131,6 +131,7 @@ class LivePortfolio:
 
         # Get Volumes
         _, volumes = self._fetch_current_prices_volumes()
+        volumes=volumes.iloc[-1].to_dict()
         # Record portfolio state in the database
         self.db_manager.save_portfolio_state(
             date,
