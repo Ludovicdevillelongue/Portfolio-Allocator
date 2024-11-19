@@ -108,12 +108,15 @@ class LivePortfolio:
                     .tz_convert('Europe/Paris').floor('T').tz_localize(None))
                 average_cost = round(
                     float(average_costs[average_costs['symbol'] == symbol]['filled_avg_price'].values[0]), 4)
-                price_to_update = \
-                prices[(prices["datetime"] == average_cost_datetime) & (prices['symbol'] == symbol)]['price'].values[0]
-                if average_cost != price_to_update:
-                    # replace in db
-                    self.db_manager.save_average_filled_price(average_cost, average_cost_datetime, symbol)
-                    print(f"Updated {symbol} price to average_cost: {average_cost} at {average_cost_datetime}")
+                try:
+                    price_to_update = \
+                    prices[(prices["datetime"] == average_cost_datetime) & (prices['symbol'] == symbol)]['price'].values[0]
+                    if average_cost != price_to_update:
+                        # replace in db
+                        self.db_manager.save_average_filled_price(average_cost, average_cost_datetime, symbol)
+                        print(f"Updated {symbol} price to average_cost: {average_cost} at {average_cost_datetime}")
+                except IndexError as e:
+                    pass
 
     def _record_portfolio_state(self, date):
         """Record the portfolio state after rebalancing."""
