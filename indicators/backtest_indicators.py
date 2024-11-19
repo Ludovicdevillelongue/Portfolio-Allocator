@@ -78,4 +78,9 @@ class BacktestMetrics:
         metrics['drawdown_table'] = pf.timeseries.gen_drawdown_table(
             pd.Series(metrics['portfolio_returns'].values, index=pd.to_datetime(metrics['portfolio_returns'].index))
         ).dropna().applymap(lambda x: round(x, 2) if isinstance(x, (float, int)) else x)
+        if metrics['drawdown_table'].empty:
+            metrics['drawdown_table'] = pd.DataFrame([[None] * 5], columns=['Net drawdown in %', 'Peak date',
+                                                                         'Valley date', 'Recovery date', 'Duration'])
+        else:
+            pass
         return metrics

@@ -20,22 +20,24 @@ class LiveAllocationRunner:
                                       self.data_frequency, self.db_manager)
 
     def convert_portfolio_results(self, live_portfolio):
-        df_price = pd.DataFrame(live_portfolio.price_history, columns=['timestamp', 'symbol', 'price'])
-        df_price = df_price.drop_duplicates(subset=['timestamp', 'symbol'], keep='first')
-        close_prices = df_price.pivot(index='timestamp', columns='symbol', values='price')
-        live_portfolio.price_history = {t: {s: v for _, s, v in filter(lambda x: x[0] == t,
-                                                                       live_portfolio.price_history)}
-                                        for t, _, _ in live_portfolio.price_history}
-        live_portfolio.position_history = {t: {s: v for _, s, v in filter(lambda x: x[0] == t,
-                                                                        live_portfolio.position_history)}
-                                         for t, _, _ in live_portfolio.position_history}
-        live_portfolio.weight_history = {t: {s: v for _, s, v in filter(lambda x: x[0] == t,
-                                                                        live_portfolio.weight_history)}
-                                         for t, _, _ in live_portfolio.weight_history}
-        keys = ['amount', 'date', 'price', 'symbol']
-        live_portfolio.transaction_history = [dict(zip(keys, values)) for values in live_portfolio.transaction_history]
-        live_portfolio.cash_history = dict(live_portfolio.cash_history)
-        return close_prices
+        def to_dataframe(data, index, columns, values):
+            df = pd.DataFrame(data, columns=[index, columns, values])
+            return df.drop_duplicates(subset=[index, columns], keep='first').pivot(index=index, columns=columns,
+                                                                                   values=values)
+        # Convert all histories into DataFrames
+        live_portfolio.price_history = to_dataframe(live_portfolio.price_history, 'timestamp', 'symbol', 'price')
+        live_portfolio.position_history = to_dataframe(live_portfolio.position_history, 'timestamp', 'symbol',
+                                                       'position')
+        live_portfolio.volume_history = to_dataframe(live_portfolio.volume_history, 'timestamp', 'symbol',
+                                                       'volume')
+        live_portfolio.weight_history = to_dataframe(live_portfolio.weight_history, 'timestamp', 'symbol', 'weight')
+        live_portfolio.transaction_history = pd.DataFrame(
+            live_portfolio.transaction_history, columns=['amount', 'date', 'price', 'symbol']
+        )
+        live_portfolio.cash_history = pd.DataFrame(live_portfolio.cash_history,
+                                                   columns=['timestamp', 'cash']).set_index('timestamp')
+        live_portfolio.strategy_history=pd.DataFrame(live_portfolio.strategy_history,
+                     columns=['strategy_name', 'best_params', 'best_opti_algo', 'last_rebalance_date'])
 
     def reallocate(self, rebalance_frequency):
 
@@ -55,14 +57,8 @@ class LiveAllocationRunner:
     def get_live_metrics(self):
         while True:
             self.live_portfolio._query_portfolio_state()
-            volume_history=(pd.DataFrame(self.live_portfolio.volume_history, columns=['datetime', 'symbol', 'volume']).
-                            pivot(index='datetime', columns='symbol', values='volume'))
-            price_history=(pd.DataFrame(self.live_portfolio.price_history, columns=['datetime', 'symbol', 'price']).
-                           pivot(index='datetime', columns='symbol', values='price'))
-            self.benchmark_returns = (BenchmarkPortfolio(symbols, volume_history).
-                                      compute_benchmark_returns(LiveMetrics(price_history).compute_asset_returns()))
-            close_prices = self.convert_portfolio_results(self.live_portfolio)
-            portfolio_metrics = LiveMetrics(close_prices).compute_strategy_metrics(self.live_portfolio, self.benchmark_returns)
-            portfolio_metrics['strategy_history'] = pd.DataFrame(self.live_portfolio.strategy_history,
-                                                               columns=['strategy_name', 'best_params', 'best_opti_algo', 'last_rebalance_date'])
+            self.convert_portfolio_results(self.live_portfolio)
+            self.benchmark_returns = (BenchmarkPortfolio(symbols, self.live_portfolio.volume_history).
+                                      compute_benchmark_returns(LiveMetrics(self.live_portfolio.price_history).compute_asset_returns()))
+            portfolio_metrics = LiveMetrics(self.live_portfolio.price_history).compute_strategy_metrics(self.live_portfolio, self.benchmark_returns)
             return portfolio_metrics
