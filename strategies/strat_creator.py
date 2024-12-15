@@ -9,6 +9,8 @@ from scipy.spatial.distance import pdist, squareform
 from sklearn.ensemble import RandomForestRegressor
 from stable_baselines3 import PPO, DDPG, TD3
 from gym import spaces
+from stable_baselines3.common.vec_env import DummyVecEnv
+
 
 class AllocationStrategy(ABC):
     @abstractmethod
@@ -294,36 +296,72 @@ class AdvancedHierarchicalRiskParity(AllocationStrategy):
         else:
             raise ValueError(f"Unknown risk measure: {self.risk_measure}")
 
+
 class MLModelAllocator(AllocationStrategy):
     def __init__(self, model=None, regularization_strength=0.0):
-        if model is None:
-            self.model = RandomForestRegressor()
-        else:
-            self.model = model
+        self.model = model if model is not None else RandomForestRegressor()
         self.regularization_strength = regularization_strength
 
     def compute_weights(self, historical_returns):
+        # Align features and target
+        features = historical_returns.iloc[:-1]
+        target = historical_returns.iloc[1:]
+
         # Train ML model to predict future returns
-        features = historical_returns.dropna()
-        target = historical_returns.shift(-1).dropna()  # Predict next period returns
         self.model.fit(features, target)
 
-        # Predict next-period returns and compute weights
-        next_period_returns = self.model.predict(features.iloc[-1:])
-        weights = self._optimize_weights(next_period_returns)
+        # Predict next-period returns
+        next_period_features = historical_returns.iloc[-1:].values.reshape(1, -1)
+        predicted_returns = pd.Series(
+            self.model.predict(next_period_features).flatten(),
+            index=historical_returns.columns
+        )
+
+        # Optimize weights based on predicted returns
+        weights = self._optimize_weights(predicted_returns, historical_returns)
         return weights
 
-    def _optimize_weights(self, predicted_returns):
+    def _optimize_weights(self, predicted_returns, historical_returns):
         num_assets = len(predicted_returns)
-        weights = np.ones(num_assets) / num_assets
-        return {symbol: weight for symbol, weight in zip(predicted_returns.columns, weights)}
+        symbols = predicted_returns.index.tolist()
+
+        # Calculate covariance matrix for risk consideration
+        sigma = historical_returns.cov().values
+
+        # Objective function: maximize Sharpe ratio (return/risk)
+        def objective(w):
+            expected_return = np.dot(w, predicted_returns.values)
+            risk = np.sqrt(np.dot(w.T, np.dot(sigma, w)))
+            regularization = self.regularization_strength * np.sum(w ** 2)
+            # Negative Sharpe ratio (since we minimize)
+            return -(expected_return / risk) + regularization
+
+        # Constraints: weights sum to 1
+        constraints = {'type': 'eq', 'fun': lambda w: np.sum(w) - 1}
+
+        # Bounds: weights between 0 and 1 (long-only)
+        bounds = [(0, 1) for _ in range(num_assets)]
+
+        # Initial guess: equal weights
+        initial_weights = np.ones(num_assets) / num_assets
+
+        result = minimize(
+            objective,
+            initial_weights,
+            method='SLSQP',
+            bounds=bounds,
+            constraints=constraints,
+            options={'disp': False, 'ftol': 1e-10}
+        )
+
+        return dict(zip(symbols, result.x))
 
 class PortfolioEnv(gym.Env):
-    def __init__(self, historical_returns, initial_capital=100000, transaction_cost=0.001, risk_aversion=1.0):
+    def __init__(self, historical_returns, initial_capital=100000, risk_aversion=1.0):
         super(PortfolioEnv, self).__init__()
         self.historical_returns = historical_returns
         self.initial_capital = initial_capital
-        self.transaction_cost = transaction_cost
+        self.transaction_cost = 0
         self.risk_aversion = risk_aversion
 
         self.num_assets = historical_returns.shape[1]
@@ -332,10 +370,10 @@ class PortfolioEnv(gym.Env):
 
         # Portfolio state: asset weights, cash position, market conditions (returns)
         self.state_size = self.num_assets + 2  # Weights + Cash + Returns info
-        self.action_space = spaces.Box(low=-1, high=1, shape=(self.num_assets,), dtype=np.float32)
+        self.action_space = spaces.Box(low=0, high=1, shape=(self.num_assets,), dtype=np.float32)
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.state_size,), dtype=np.float32)
 
-        self.current_weights = np.zeros(self.num_assets)
+        self.current_weights = np.ones(self.num_assets) / self.num_assets
         self.cash_balance = self.initial_capital
         self.portfolio_value = self.initial_capital
 
@@ -355,23 +393,26 @@ class PortfolioEnv(gym.Env):
         if self.done:
             raise ValueError("Cannot step in a finished episode")
 
-        action = np.clip(action, 0, 1)  # Ensure valid action (weights between 0 and 1)
-        action /= np.sum(action)  # Normalize weights to sum to 1
+        # Ensure valid action (weights between 0 and 1) and normalize
+        action = np.clip(action, 0, 1)
+        if action.sum() == 0:
+            action = self.current_weights
+        else:
+            action /= np.sum(action)
 
         # Market returns and portfolio adjustment
         current_returns = self.historical_returns.iloc[self.current_step].values
-        self.portfolio_value = (self.portfolio_value * np.dot(self.current_weights, 1 + current_returns))
+        self.portfolio_value *= np.dot(self.current_weights, 1 + current_returns)
 
         # Transaction costs for rebalancing
-        transaction_costs = self.transaction_cost * np.sum(
-            np.abs(action - self.current_weights)) * self.portfolio_value
+        transaction_costs = self.transaction_cost * np.sum(np.abs(action - self.current_weights)) * self.portfolio_value
         self.portfolio_value -= transaction_costs
 
         # Update weights and cash balance
         self.current_weights = action
         self.cash_balance = self.portfolio_value
 
-        # Calculate reward (e.g., risk-adjusted return using Sharpe ratio)
+        # Calculate reward (e.g., risk-adjusted return)
         reward = (self.portfolio_value - self.initial_capital) / self.initial_capital
         reward -= self.risk_aversion * np.std(current_returns)  # Penalize high volatility
 
@@ -382,46 +423,73 @@ class PortfolioEnv(gym.Env):
         return self._get_observation(), reward, self.done, {}
 
     def render(self, mode='human'):
-        print(
-            f"Step {self.current_step}: Portfolio Value = {self.portfolio_value}, Weights = {self.current_weights}")
+        print(f"Step {self.current_step}: Portfolio Value = {self.portfolio_value:.2f}, Weights = {self.current_weights}")
 
 class ReinforcementLearningAllocator(AllocationStrategy):
-    def __init__(self, historical_returns, algorithm='PPO', transaction_cost=0.001, risk_aversion=1.0, total_timesteps=10000):
-        self.env = PortfolioEnv(historical_returns, transaction_cost=transaction_cost, risk_aversion=risk_aversion)
-        self.algorithm = algorithm
-        self.total_timesteps = total_timesteps
-        self.model = self._select_rl_model()
+    def __init__(self, algorithm='PPO', risk_aversion=1.0, total_timesteps=10000, verbose=0):
+        """
+        Initializes the ReinforcementLearningAllocator.
 
-    def _select_rl_model(self):
+        Parameters:
+        - algorithm (str): RL algorithm to use ('PPO', 'DDPG', 'TD3').
+        - risk_aversion (float): Risk aversion coefficient.
+        - total_timesteps (int): Number of timesteps to train the RL agent.
+        """
+        self.algorithm = algorithm
+        self.risk_aversion = risk_aversion
+        self.total_timesteps = total_timesteps
+        self.verbose = verbose
+        self.model = None  # To be initialized after environment is set
+
+    def _select_rl_model(self, env):
         if self.algorithm == 'PPO':
-            return PPO("MlpPolicy", self.env, verbose=1)
+            return PPO("MlpPolicy", env, verbose=self.verbose)
         elif self.algorithm == 'DDPG':
-            return DDPG("MlpPolicy", self.env, verbose=1)
+            return DDPG("MlpPolicy", env, verbose=self.verbose)
         elif self.algorithm == 'TD3':
-            return TD3("MlpPolicy", self.env, verbose=1)
+            return TD3("MlpPolicy", env, verbose=self.verbose)
         else:
             raise ValueError(f"Unknown algorithm: {self.algorithm}")
 
-    def _train_agent(self, historical_returns):
-        # Training the agent with the environment
-        self.model.learn(total_timesteps=self.total_timesteps)  # Adjust timesteps based on the data length
-        return self.model
-
     def compute_weights(self, historical_returns):
-        agent = self._train_agent(historical_returns)
-        obs = self.env.reset()
+        """
+        Trains the RL agent on the provided historical returns and computes the optimal portfolio weights.
+
+        Parameters:
+        - historical_returns (pd.DataFrame): Historical returns with assets as columns.
+
+        Returns:
+        - dict: Mapping of asset symbols to their optimized weights.
+        """
+        # Initialize the environment with historical_returns
+        env = DummyVecEnv(
+            [lambda: PortfolioEnv(historical_returns=historical_returns, risk_aversion=self.risk_aversion)])
+        self.model = self._select_rl_model(env)
+
+        # Optional: Check the environment (can be commented out in production)
+        # check_env(env)
+
+        # Select and initialize the RL model
+        self.model = self._select_rl_model(env)
+
+        # Train the RL agent
+        self.model.learn(total_timesteps=self.total_timesteps)
+
+        # Reset the environment to start from the beginning
+        obs = env.reset()
         done = False
+
+        portfolio_env = env.envs[0]
+
+        # Run the trained agent through the environment to obtain the final weights
         while not done:
-            action, _states = agent.predict(obs)
-            obs, rewards, done, info = self.env.step(action)
-        return dict(zip(historical_returns.columns, self.env.current_weights))
+            action, _states = self.model.predict(obs, deterministic=True)
+            obs, rewards, done, info = env.step(action)
 
+        # Extract the final portfolio weights
+        final_weights = portfolio_env.current_weights
 
-
-
-
-
-
-
+        # Return weights as a dictionary mapping asset symbols to weights
+        return dict(zip(historical_returns.columns, final_weights))
 
 

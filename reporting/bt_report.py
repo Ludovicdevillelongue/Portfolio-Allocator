@@ -9,6 +9,11 @@ from matplotlib.backends.backend_pdf import PdfPages
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Font
 from waitress import serve
+import logging
+logging.basicConfig(
+    format='%(asctime)s: %(levelname)s: %(message)s',
+    level=logging.INFO
+)
 
 
 class PyfolioReport:
@@ -56,7 +61,7 @@ class PyfolioReport:
         plt.title('Asset Returns Correlation Heatmap')
         plt.savefig(f'{self.output_dir}/correlation_heatmap.png')
         plt.close()
-        print(f"Pyfolio report and plots saved to '{self.output_dir}' directory.")
+        logging.info(f"Pyfolio report and plots saved to '{self.output_dir}' directory.")
 
 
 class ShapReport:
@@ -321,7 +326,7 @@ class ExcelReport:
 
         # Save the workbook
         wb.save(output_path)
-        print(f"Excel report saved to {output_path}")
+        logging.info(f"Excel report saved to {output_path}")
 
     def write_dataframes_to_excel(self, dataframes, ws, table_names_list, strat):
         invisible_border = Border(

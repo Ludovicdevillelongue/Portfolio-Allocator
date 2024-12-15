@@ -9,14 +9,14 @@ broker = 'alpaca'
 symbols = [
     'TSLA', 'NVDA', 'MSFT'
 ]
-start_date = (datetime.now() - timedelta(days=500)).strftime('%Y-%m-%d')
+start_date = (datetime.now() - timedelta(days=4 * 365)).strftime('%Y-%m-%d')
 end_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
 initial_capital = 100000
 rebalance_frequency = 'daily'
 
 # Backtest settings
 in_out_sample_period = 90
-iterations = 2
+iterations = 10
 bt_port = 6001
 
 
@@ -33,9 +33,9 @@ strategies = {
     'ERC': ERC(),
     'CVaROptimization': CVaROptimization(),
     'HierarchicalRiskParity': HierarchicalRiskParity(),
+    'MLModelAllocator': MLModelAllocator(),
+    'ReinforcementLearningAllocator': ReinforcementLearningAllocator(),
     # 'AdvancedHierarchicalRiskParity': AdvancedHierarchicalRiskParity(),
-    # 'MLModelAllocator': MLModelAllocator(),
-    # 'ReinforcementLearningAllocator': ReinforcementLearningAllocator(),
 }
 
 # Parameter grids for strategy optimization
@@ -78,12 +78,8 @@ param_grids = {
     },
     'ReinforcementLearningAllocator': {
         'algorithm': ['PPO', 'TD3', 'DDPG'],
-        'learning_rate': (0.0001, 0.01),
-        'gamma': (0.9, 0.99),
-        'n_steps': (64, 512),
-        'transaction_cost': (0.0001, 0.01),
         'risk_aversion': (0.5, 2.0),
-        'total_timesteps': (5000, 20000)
+        'total_timesteps': (100, 500)
     }
 }
 

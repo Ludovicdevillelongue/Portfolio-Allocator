@@ -50,8 +50,7 @@ class LiveAllocationRunner:
 
     def record_live_metrics(self):
         while True:
-            current_datetime = time.strftime("%Y-%m-%d %H:%M")  # Fetch current timestamp
-            self.live_portfolio._record_portfolio_state(current_datetime)  # Record portfolio state
+            self.live_portfolio._record_portfolio_state()  # Record portfolio state
             time.sleep(60)
 
     def get_live_metrics(self):
