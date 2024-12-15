@@ -2,7 +2,6 @@ import json
 import sys
 import os
 import threading
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import time
 from broker.broker_connect import AlpacaConnect
@@ -14,6 +13,11 @@ from backtest.backtester import Backtester
 from data_management.data_retriever import AlpacaDataRetriever
 from strategies.strat_optimizer import RandomSearchAlgorithm, GridSearchAlgorithm
 from config.bt_config import *
+import logging
+logging.basicConfig(
+    format='%(asctime)s: %(levelname)s: %(message)s',
+    level=logging.INFO
+)
 
 class PortfolioAllocator:
     def __init__(self):
@@ -33,7 +37,7 @@ class PortfolioAllocator:
 
         optimization_algorithms = [RandomSearchAlgorithm(), GridSearchAlgorithm()]
 
-        print("Running backtests...")
+        logging.info("Running backtests...")
         backtester = Backtester(data_handler, adjusted_close_prices, asset_returns, benchmark_returns, initial_capital,
                                 strategies, in_out_sample_period, bt_port, rebalance_frequency)
 
@@ -59,11 +63,11 @@ class PortfolioAllocator:
                 'final_weights': final_weights,
             }
             strategy_info = self.update_strategy_info(strategy_info)
-            print(f"Best strategy: {best_strategy_name} with Sharpe ratio: {best_sharpe}")
+            logging.info(f"Best strategy: {best_strategy_name} with Sharpe ratio: {best_sharpe}")
 
 
 
-        print("Starting live trading...")
+        logging.info("Starting live trading...")
         live_allocation_runner = LiveAllocationRunner(self.api, broker_config_path, strategy_info, data_frequency)
         live_allocation_runner.reallocate(rebalance_frequency)
 
@@ -76,7 +80,7 @@ class PortfolioAllocator:
         while datetime.now() < end_time:
             time.sleep(10)  # Keep the thread alive, no need to re-open the dashboard
 
-        print("Dashboard exited at 10 PM")
+        logging.info("Dashboard exited at 10 PM")
 
     def read_strategy_info(self):
         if os.path.exists(strategy_info_path):

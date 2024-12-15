@@ -129,7 +129,11 @@ class Backtester:
     def get_latest_weights(self, strategy_instance, last_rebalance_date):
         self.rebalancer = Rebalancer(strategy_instance, self.rebalance_frequency, last_rebalance_date)
         latest_weights = self.rebalancer.rebalance(datetime.now().date(), self.asset_returns)
-        return latest_weights
+        try:
+            latest_weights_converted = {k: np.float64(v) if isinstance(v, np.float32) else v for k, v in latest_weights.items()}
+        except AttributeError as e:
+            pass
+        return latest_weights_converted
 
     def report_backtest(self):
         pass

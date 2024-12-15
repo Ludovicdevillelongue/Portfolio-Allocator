@@ -1,7 +1,11 @@
 import pandas as pd
 
 from live.live_database_manager import PortfolioDatabaseManager
-
+import logging
+logging.basicConfig(
+    format='%(asctime)s: %(levelname)s: %(message)s',
+    level=logging.INFO
+)
 
 def is_in_out_sample_period_satisfied(historical_returns, in_out_sample_period):
     return len(historical_returns) >= in_out_sample_period
@@ -23,7 +27,7 @@ def db_query_test():
 
 def db_delete():
     PortfolioDatabaseManager().delete_tables()
-    print("Tables deleted")
+    logging.info("Tables deleted")
 
 if __name__ == "__main__":
-    db_query_test()
+    db_delete()

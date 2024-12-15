@@ -1,13 +1,12 @@
 import json
+import logging
 import os
+import sys
 import time
 from collections import defaultdict
 from datetime import datetime
-import sys
 
 import pandas as pd
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from broker.broker_connect import AlpacaConnect
 from broker.broker_metrics import AlpacaPlatformMetrics
@@ -15,6 +14,14 @@ from broker.broker_order import AlpacaTradingBot
 from data_management.data_retriever import AlpacaDataRetriever
 from strategies.rebalancer import Rebalancer
 from config.bt_config import *
+
+logging.basicConfig(
+    format='%(asctime)s: %(levelname)s: %(message)s',
+    level=logging.INFO
+)
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 class LivePortfolio:
     def __init__(self, api, broker_config_path, strategy_info, data_frequency, db_manager):
@@ -54,7 +61,7 @@ class LivePortfolio:
         rebalancer = Rebalancer(self.strategy_info['strategy_name'], rebalance_frequency, last_rebalance_date)
 
         if not rebalancer.should_rebalance(date):
-            print(f"Skipping rebalance on {date} due to {rebalance_frequency} frequency.")
+            logging.info(f"Skipping rebalance on {date} due to {rebalance_frequency} frequency.")
             return
 
         self.strategy_info['last_rebalance_date'] = str(date)
@@ -114,35 +121,44 @@ class LivePortfolio:
                     if average_cost != price_to_update:
                         # replace in db
                         self.db_manager.save_average_filled_price(average_cost, average_cost_datetime, symbol)
-                        print(f"Updated {symbol} price to average_cost: {average_cost} at {average_cost_datetime}")
+                        logging.info(f"Updated {symbol} price to average_cost: {average_cost} at {average_cost_datetime}")
                 except IndexError as e:
                     pass
 
-    def _record_portfolio_state(self, date):
+    def _record_portfolio_state(self):
         """Record the portfolio state after rebalancing."""
         cash_balance = self.broker_metrics.get_portfolio_cash()
 
         # Get positions and prices
-        try:
-            positions_prices = self.broker_metrics.get_all_positions()[['symbol', 'qty', 'current_price']]
-            positions = dict(zip(positions_prices['symbol'], positions_prices['qty']))
-            prices = dict(zip(positions_prices['symbol'], positions_prices['current_price']))
-        except Exception as e:
-            positions_prices = self.broker_metrics.get_all_orders()
-            positions = dict(zip(positions_prices['symbol'], positions_prices['filled_qty']))
-            prices = dict(zip(positions_prices['symbol'], positions_prices['filled_avg_price']))
+        while True:
+            try:
+                positions_prices = self.broker_metrics.get_all_positions()[['symbol', 'qty', 'current_price']]
+                positions = dict(zip(positions_prices['symbol'], positions_prices['qty']))
+                prices = dict(zip(positions_prices['symbol'], positions_prices['current_price']))
+                break
+            except Exception as e:
+                logging.info("Waiting for first positions to be filled")
+                time.sleep(60)
+
 
         # Get Volumes
         _, volumes = self._fetch_current_prices_volumes()
         volumes=volumes.iloc[-1].to_dict()
+
+        # Get current time
+        date = time.strftime("%Y-%m-%d %H:%M")
+
         # Record portfolio state in the database
-        self.db_manager.save_portfolio_state(
-            date,
-            positions,
-            prices,
-            volumes,
-            cash_balance
-        )
+        attempts = 0
+        while attempts < 5:  # Retry up to 5 times
+            try:
+                self.db_manager.save_portfolio_state(date, positions, prices, volumes, cash_balance)
+                break
+            except Exception as e:
+                attempts += 1
+                wait_time = 2 ** attempts  # Exponential backoff
+                logging.warning(f"Error saving portfolio state: {e}. Retrying in {wait_time} seconds...")
+                time.sleep(wait_time)
 
     def _query_portfolio_state(self):
         (self.position_history, self.price_history, self.volume_history, self.weight_history, self.transaction_history, self.cash_history,

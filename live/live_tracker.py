@@ -8,6 +8,11 @@ from broker.broker_connect import AlpacaConnect
 from live.live_runner import LiveAllocationRunner
 from reporting.live_report import LiveDashReport
 from config.bt_config import *
+import logging
+logging.basicConfig(
+    format='%(asctime)s: %(levelname)s: %(message)s',
+    level=logging.INFO
+)
 
 class LiveTracker:
     def run(self, retry_interval=2):
@@ -17,12 +22,12 @@ class LiveTracker:
             try:
                 if os.path.exists(strategy_info_path):  # Check if the file exists
                     strategy_info = pd.read_json(strategy_info_path)
-                    print("Successfully loaded strategy_info.")
+                    logging.info("Successfully loaded strategy_info.")
                 else:
                     raise FileNotFoundError(f"File {strategy_info_path} not found.")
             except FileNotFoundError as e:
-                print(f"Error: {e}")
-                print(f"Retrying in {retry_interval} seconds...")
+                logging.info(f"Error: {e}")
+                logging.info(f"Retrying in {retry_interval} seconds...")
                 time.sleep(retry_interval)
         live_allocation_runner = LiveAllocationRunner(api, broker_config_path, strategy_info,
                                            data_frequency)
