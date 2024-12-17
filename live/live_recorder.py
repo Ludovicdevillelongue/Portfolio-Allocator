@@ -1,6 +1,8 @@
 import logging
 import sys
 import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import time
 import pandas as pd
 from broker.broker_connect import AlpacaConnect
@@ -8,7 +10,7 @@ from live.live_runner import LiveAllocationRunner
 from reporting.live_report import LiveDashReport
 from config.bt_config import *
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 logging.basicConfig(
     format='%(asctime)s: %(levelname)s: %(message)s',
